@@ -16,6 +16,7 @@ import {
   Settings,
   ShieldAlert,
   Square,
+  Star,
   Trash2,
   Upload,
   Users,
@@ -124,6 +125,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToSite }) => {
   const [collabVideoUrl, setCollabVideoUrl] = useState('');
   const [collabYoutube, setCollabYoutube] = useState('');
   const [collabSpotify, setCollabSpotify] = useState('');
+  const [collabFeaturedArtist, setCollabFeaturedArtist] = useState(false);
+  const [collabArtistName, setCollabArtistName] = useState('');
+  const [collabArtistPhotoUrl, setCollabArtistPhotoUrl] = useState('');
+  const [collabArtistDesc, setCollabArtistDesc] = useState('');
   const [savingCollab, setSavingCollab] = useState(false);
   const [confirmDeleteCollabId, setConfirmDeleteCollabId] = useState<string | null>(null);
 
@@ -546,15 +551,33 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToSite }) => {
     setCollabVideoUrl('');
     setCollabYoutube('');
     setCollabSpotify('');
+    setCollabFeaturedArtist(false);
+    setCollabArtistName('');
+    setCollabArtistPhotoUrl('');
+    setCollabArtistDesc('');
   };
 
   const handleCollabImagePick = async (file: File | undefined) => {
     if (!file) return;
     try {
-      const dataUrl = await compressImageToDataUrl(file, 1200, 500000);
+      // Kept <= 320KB so cover + optional featured artist photo comfortably fit in 1 Firestore doc
+      const dataUrl = await compressImageToDataUrl(file, 960, 320000);
       setCollabImageUrl(dataUrl);
     } catch (err) {
       showToast('err', err instanceof Error ? err.message : 'Error al procesar imagen.');
+    }
+  };
+
+  const handleCollabArtistPhotoPick = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      const dataUrl = await compressImageToDataUrl(file, 900, 320000);
+      setCollabArtistPhotoUrl(dataUrl);
+    } catch (err) {
+      showToast(
+        'err',
+        err instanceof Error ? err.message : 'Error al procesar la foto del artista.'
+      );
     }
   };
 
@@ -562,20 +585,32 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToSite }) => {
     e.preventDefault();
     if (!user) return;
     if (!collabTitle.trim()) {
-      showToast('err', 'Ingresá el título de la colaboración.');
+      showToast('err', 'Ingresá el título de la canción o colaboración.');
+      return;
+    }
+    if (collabFeaturedArtist && !collabArtistName.trim()) {
+      showToast('err', 'Ingresá el nombre del artista destacado.');
       return;
     }
     setSavingCollab(true);
     try {
+      const payload = {
+        title: collabTitle.trim(),
+        description: collabDesc.trim(),
+        imageUrl: collabImageUrl.trim(),
+        videoUrl: collabVideoUrl.trim(),
+        youtubeUrl: collabYoutube.trim(),
+        spotifyUrl: collabSpotify.trim(),
+        isFeaturedArtist: collabFeaturedArtist,
+        artistName: collabFeaturedArtist ? collabArtistName.trim() : '',
+        artistPhotoUrl: collabFeaturedArtist ? collabArtistPhotoUrl.trim() : '',
+        artistDescription: collabFeaturedArtist ? collabArtistDesc.trim() : '',
+      };
+
       if (editingCollabId) {
         const existing = collabs.find((c) => c.id === editingCollabId);
         await updateCollaboration(editingCollabId, {
-          title: collabTitle.trim(),
-          description: collabDesc.trim(),
-          imageUrl: collabImageUrl.trim(),
-          videoUrl: collabVideoUrl.trim(),
-          youtubeUrl: collabYoutube.trim(),
-          spotifyUrl: collabSpotify.trim(),
+          ...payload,
           order: existing?.order ?? 1,
           isPublic: existing?.isPublic ?? true,
         });
@@ -584,12 +619,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToSite }) => {
         const nextOrder = collabs.length > 0 ? Math.max(...collabs.map((c) => c.order)) + 1 : 1;
         await addCollaboration(
           {
-            title: collabTitle.trim(),
-            description: collabDesc.trim(),
-            imageUrl: collabImageUrl.trim(),
-            videoUrl: collabVideoUrl.trim(),
-            youtubeUrl: collabYoutube.trim(),
-            spotifyUrl: collabSpotify.trim(),
+            ...payload,
             order: nextOrder,
             isPublic: true,
           },
@@ -614,6 +644,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToSite }) => {
     setCollabVideoUrl(item.videoUrl);
     setCollabYoutube(item.youtubeUrl);
     setCollabSpotify(item.spotifyUrl);
+    setCollabFeaturedArtist(Boolean(item.isFeaturedArtist));
+    setCollabArtistName(item.artistName || '');
+    setCollabArtistPhotoUrl(item.artistPhotoUrl || '');
+    setCollabArtistDesc(item.artistDescription || '');
   };
 
   const toggleCollabVisibility = async (item: Collaboration) => {
@@ -625,6 +659,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToSite }) => {
         videoUrl: item.videoUrl,
         youtubeUrl: item.youtubeUrl,
         spotifyUrl: item.spotifyUrl,
+        isFeaturedArtist: item.isFeaturedArtist,
+        artistName: item.artistName,
+        artistPhotoUrl: item.artistPhotoUrl,
+        artistDescription: item.artistDescription,
         order: item.order,
         isPublic: !item.isPublic,
       });
@@ -1611,9 +1649,114 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToSite }) => {
                     )}
                   </div>
 
+                  {/* Featured Artist Spotlight Link */}
+                  <div className="border border-white/15 bg-[#080809] p-4 space-y-3">
+                    <label className="flex items-start gap-3 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={collabFeaturedArtist}
+                        onChange={(e) => setCollabFeaturedArtist(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 accent-[#c10e2e] shrink-0"
+                      />
+                      <div className="space-y-0.5">
+                        <span className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-[0.12em] text-white">
+                          <Star
+                            className={`w-3.5 h-3.5 ${
+                              collabFeaturedArtist
+                                ? 'text-[#f02b49] fill-[#f02b49]'
+                                : 'text-[#aaa6aa]'
+                            }`}
+                          />
+                          Destacar artista importante
+                        </span>
+                        <span className="block text-[11px] text-[#aaa6aa] leading-snug">
+                          Muestra la foto y nombre del artista arriba en la sección. Al tocarlo,
+                          abre directo la canción en YouTube o Spotify.
+                        </span>
+                      </div>
+                    </label>
+
+                    {collabFeaturedArtist && (
+                      <div className="pt-3 border-t border-white/10 space-y-3">
+                        <div>
+                          <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                            Nombre del artista destacado *
+                          </label>
+                          <input
+                            type="text"
+                            required={collabFeaturedArtist}
+                            maxLength={SCHEMA_LIMITS.collabArtistName}
+                            value={collabArtistName}
+                            onChange={(e) => setCollabArtistName(e.target.value)}
+                            placeholder="Ej: Damián Córdoba, Lit Killah, Bizarrap…"
+                            className="w-full bg-[#111113] border border-white/15 px-3 py-2 text-sm text-white focus:border-[#f02b49] focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                            Foto del artista
+                          </label>
+                          <label className="flex items-center justify-center gap-2 border border-dashed border-white/25 hover:border-[#f02b49] bg-[#111113] p-3 cursor-pointer text-xs">
+                            <Upload className="w-4 h-4 text-[#f02b49]" />
+                            <span>
+                              {collabArtistPhotoUrl
+                                ? 'Cambiar foto del artista'
+                                : 'Subir foto del artista'}
+                            </span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => void handleCollabArtistPhotoPick(e.target.files?.[0])}
+                            />
+                          </label>
+                          {collabArtistPhotoUrl && (
+                            <div className="mt-2 relative flex items-center gap-3 p-2 bg-[#111113] border border-white/15">
+                              <img
+                                src={collabArtistPhotoUrl}
+                                alt={collabArtistName || 'Artista destacado'}
+                                className="w-16 h-20 object-cover object-top border border-white/15 shrink-0"
+                              />
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-semibold text-white truncate">
+                                  {collabArtistName || 'Vista previa del artista'}
+                                </p>
+                                <p className="text-[11px] text-[#aaa6aa]">
+                                  Lista para mostrarse destacada
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setCollabArtistPhotoUrl('')}
+                                className="px-2 py-1 bg-black/80 border border-white/20 text-[10px] uppercase text-white hover:border-[#f02b49]"
+                              >
+                                Quitar
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                            Descripción del artista (opcional)
+                          </label>
+                          <textarea
+                            rows={2}
+                            maxLength={SCHEMA_LIMITS.collabArtistDescription}
+                            value={collabArtistDesc}
+                            onChange={(e) => setCollabArtistDesc(e.target.value)}
+                            placeholder="Ej: Composición y colaboración especial…"
+                            className="w-full bg-[#111113] border border-white/15 px-3 py-2 text-xs text-white focus:border-[#f02b49] focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   <div>
                     <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
-                      Descripción (opcional)
+                      Descripción de la canción (opcional)
                     </label>
                     <textarea
                       rows={2}
@@ -1667,11 +1810,37 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToSite }) => {
                       {collabs.map((item) => (
                         <div
                           key={item.id}
-                          className="border border-white/12 bg-[#080809] p-4 flex flex-col gap-3"
+                          className={`border bg-[#080809] p-4 flex flex-col gap-3 ${
+                            item.isFeaturedArtist ? 'border-[#f02b49]/50' : 'border-white/12'
+                          }`}
                         >
+                          {item.isFeaturedArtist && (
+                            <div className="flex items-center gap-2.5 pb-2.5 border-b border-white/10">
+                              {item.artistPhotoUrl ? (
+                                <img
+                                  src={item.artistPhotoUrl}
+                                  alt={item.artistName || item.title}
+                                  className="w-10 h-10 object-cover object-top border border-[#f02b49]/50 shrink-0"
+                                />
+                              ) : (
+                                <span className="w-10 h-10 bg-[#c10e2e]/20 border border-[#f02b49]/40 grid place-items-center shrink-0">
+                                  <Star className="w-4 h-4 text-[#f02b49] fill-[#f02b49]" />
+                                </span>
+                              )}
+                              <div className="min-w-0">
+                                <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#f02b49]">
+                                  ★ Artista destacado
+                                </span>
+                                <strong className="block text-xs text-white truncate">
+                                  {item.artistName || 'Sin nombre'}
+                                </strong>
+                              </div>
+                            </div>
+                          )}
+
                           <div className="flex items-start justify-between gap-2">
                             <h3 className="font-bold text-sm text-white">{item.title}</h3>
-                            <span className="text-[10px] uppercase tracking-wider text-[#aaa6aa]">
+                            <span className="text-[10px] uppercase tracking-wider text-[#aaa6aa] shrink-0">
                               {item.isPublic ? 'Visible' : 'Oculta'}
                             </span>
                           </div>
@@ -1682,9 +1851,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToSite }) => {
                               className="w-full h-36 object-cover border border-white/10"
                             />
                           )}
-                          {item.description && (
+                          {(item.artistDescription || item.description) && (
                             <p className="text-xs text-[#aaa6aa] line-clamp-3">
-                              {item.description}
+                              {item.isFeaturedArtist && item.artistDescription
+                                ? item.artistDescription
+                                : item.description}
                             </p>
                           )}
                           <div className="mt-auto pt-2 flex items-center justify-between gap-2 border-t border-white/10">
