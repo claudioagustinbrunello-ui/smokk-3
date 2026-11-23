@@ -513,6 +513,10 @@ function mapCollabDoc(id: string, d: Record<string, unknown>): Collaboration {
     videoUrl: String(d.videoUrl || ''),
     youtubeUrl: String(d.youtubeUrl || ''),
     spotifyUrl: String(d.spotifyUrl || ''),
+    isFeaturedArtist: Boolean(d.isFeaturedArtist),
+    artistName: String(d.artistName || ''),
+    artistPhotoUrl: String(d.artistPhotoUrl || ''),
+    artistDescription: String(d.artistDescription || ''),
     order: typeof d.order === 'number' ? d.order : 0,
     isPublic: Boolean(d.isPublic),
     ownerId: String(d.ownerId || ''),
@@ -553,6 +557,10 @@ export async function addCollaboration(
     videoUrl: string;
     youtubeUrl: string;
     spotifyUrl: string;
+    isFeaturedArtist: boolean;
+    artistName: string;
+    artistPhotoUrl: string;
+    artistDescription: string;
     order: number;
     isPublic: boolean;
   },
@@ -568,6 +576,13 @@ export async function addCollaboration(
       videoUrl: clampString(input.videoUrl, SCHEMA_LIMITS.mediaUrl),
       youtubeUrl: clampString(input.youtubeUrl, SCHEMA_LIMITS.url),
       spotifyUrl: clampString(input.spotifyUrl, SCHEMA_LIMITS.url),
+      isFeaturedArtist: Boolean(input.isFeaturedArtist),
+      artistName: clampString(input.artistName, SCHEMA_LIMITS.collabArtistName),
+      artistPhotoUrl: clampString(input.artistPhotoUrl, SCHEMA_LIMITS.collabArtistPhotoUrl),
+      artistDescription: clampString(
+        input.artistDescription,
+        SCHEMA_LIMITS.collabArtistDescription
+      ),
       order: Math.max(0, Math.min(1000, Math.round(input.order))),
       isPublic: input.isPublic,
       ownerId: uid,
@@ -589,6 +604,10 @@ export async function updateCollaboration(
     videoUrl: string;
     youtubeUrl: string;
     spotifyUrl: string;
+    isFeaturedArtist: boolean;
+    artistName: string;
+    artistPhotoUrl: string;
+    artistDescription: string;
     order: number;
     isPublic: boolean;
   }
@@ -602,6 +621,13 @@ export async function updateCollaboration(
       videoUrl: clampString(patch.videoUrl, SCHEMA_LIMITS.mediaUrl),
       youtubeUrl: clampString(patch.youtubeUrl, SCHEMA_LIMITS.url),
       spotifyUrl: clampString(patch.spotifyUrl, SCHEMA_LIMITS.url),
+      isFeaturedArtist: Boolean(patch.isFeaturedArtist),
+      artistName: clampString(patch.artistName, SCHEMA_LIMITS.collabArtistName),
+      artistPhotoUrl: clampString(patch.artistPhotoUrl, SCHEMA_LIMITS.collabArtistPhotoUrl),
+      artistDescription: clampString(
+        patch.artistDescription,
+        SCHEMA_LIMITS.collabArtistDescription
+      ),
       order: Math.max(0, Math.min(1000, Math.round(patch.order))),
       isPublic: patch.isPublic,
       updatedAt: serverTimestamp(),
