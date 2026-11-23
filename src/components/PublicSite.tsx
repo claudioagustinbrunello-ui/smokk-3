@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { motion, MotionConfig, useScroll, useSpring, useTransform } from 'motion/react';
 import {
   fetchBackgroundVideoBlobUrl,
   fetchPublicCollaborations,
@@ -25,6 +26,9 @@ interface PublicSiteProps {
   onOpenAdmin: () => void;
 }
 
+const EASE_OUT_EXPO: [number, number, number, number] = [0.22, 1, 0.36, 1];
+const VIEWPORT_CFG = { once: true, amount: 0.16 } as const;
+
 export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
   const [config, setConfig] = useState<SiteConfig>(DEFAULT_SITE_CONFIG);
   const [tracks, setTracks] = useState<Track[]>([]);
@@ -44,12 +48,21 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
   const [portraitFailed, setPortraitFailed] = useState(false);
   const [bgImgFailed, setBgImgFailed] = useState(false);
   const [uploadedBgVideoUrl, setUploadedBgVideoUrl] = useState<string | null>(null);
+  const [showAllCollabs, setShowAllCollabs] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const resolvedAudioUrlsRef = useRef<Map<string, string>>(new Map());
   const tracksRef = useRef<Track[]>([]);
   const currentIndexRef = useRef<number>(-1);
   const musicEnabledRef = useRef<boolean>(false);
+
+  // Scroll-scrubbed reveal for the hero artist portrait on the very first scroll gesture
+  const { scrollY } = useScroll();
+  const smoothScroll = useSpring(scrollY, { stiffness: 130, damping: 24, mass: 0.35 });
+  const portraitOpacity = useTransform(smoothScroll, [0, 140], [0.22, 1]);
+  const portraitScale = useTransform(smoothScroll, [0, 150], [0.88, 1.06]);
+  const portraitX = useTransform(smoothScroll, [0, 140], [34, 0]);
+  const portraitY = useTransform(smoothScroll, [0, 140], [22, 0]);
 
   useEffect(() => {
     tracksRef.current = tracks;
@@ -184,85 +197,50 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
     };
   }, []);
 
-  // Scroll reveal observer (mirrors original app.js)
-  useEffect(() => {
-    if (!entered) return;
-    const targets = document.querySelectorAll(
-      '#site main > section:not(.hero):not(.platform-access), .section-heading, .platform-access-heading, .platform-buttons, .now-playing-card, .bio-copy > *, .gallery-card, .collab-card, .youtube-frame, .always-video > *'
-    );
-    targets.forEach((element, index) => {
-      if (element.classList.contains('scroll-reveal')) return;
-      element.classList.add('scroll-reveal');
-      if (index % 4 === 1) element.classList.add('scroll-reveal-left');
-      else if (index % 4 === 3) element.classList.add('scroll-reveal-scale');
-    });
+  const playTrackByIndex = useCallback(
+    async (index: number) => {
+      const list = tracksRef.current;
+      const audio = audioRef.current;
+      if (!list.length || !audio) return;
 
-    if (
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
-      !('IntersectionObserver' in window)
-    ) {
-      document.querySelectorAll('.scroll-reveal').forEach((el) => el.classList.add('is-visible'));
-      return;
-    }
+      const normalized = ((index % list.length) + list.length) % list.length;
+      currentIndexRef.current = normalized;
+      setCurrentTrackIndex(normalized);
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.12, rootMargin: '0px 0px -35px 0px' }
-    );
+      const track = list[normalized];
+      const title = track.title || config.artistName;
+      const artist = track.artist || config.artistName;
+      const label = `${title} — ${artist}`;
 
-    document.querySelectorAll('.scroll-reveal').forEach((el) => observer.observe(el));
+      setStatusTitle(title);
+      setStatusArtist(artist);
+      setBottomStatus(label);
 
-    return () => observer.disconnect();
-  }, [entered, gallery.length, collaborations.length]);
-
-  const playTrackByIndex = useCallback(async (index: number) => {
-    const list = tracksRef.current;
-    const audio = audioRef.current;
-    if (!list.length || !audio) return;
-
-    const normalized = ((index % list.length) + list.length) % list.length;
-    currentIndexRef.current = normalized;
-    setCurrentTrackIndex(normalized);
-
-    const track = list[normalized];
-    const title = track.title || config.artistName;
-    const artist = track.artist || config.artistName;
-    const label = `${title} — ${artist}`;
-
-    setStatusTitle(title);
-    setStatusArtist(artist);
-    setBottomStatus(label);
-
-    try {
-      let url = resolvedAudioUrlsRef.current.get(track.id);
-      if (!url) {
-        url = await fetchTrackAudioUrl(track, false);
-        resolvedAudioUrlsRef.current.set(track.id, url);
+      try {
+        let url = resolvedAudioUrlsRef.current.get(track.id);
+        if (!url) {
+          url = await fetchTrackAudioUrl(track, false);
+          resolvedAudioUrlsRef.current.set(track.id, url);
+        }
+        if (audio.src !== url) {
+          audio.src = url;
+        }
+        const playPromise = audio.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+          playPromise.catch(() => {
+            setStatusTitle('No se pudo iniciar el audio');
+            setStatusArtist('Revisá el archivo de la canción en el panel admin');
+            setIsPlaying(false);
+          });
+        }
+      } catch {
+        setStatusTitle('No se pudo reproducir la canción');
+        setStatusArtist('Revisá el archivo cargado en el panel de administración');
+        setIsPlaying(false);
       }
-      if (audio.src !== url) {
-        audio.src = url;
-      }
-      const playPromise = audio.play();
-      if (playPromise && typeof playPromise.catch === 'function') {
-        playPromise.catch(() => {
-          setStatusTitle('No se pudo iniciar el audio');
-          setStatusArtist('Revisá el archivo de la canción en el panel admin');
-          setIsPlaying(false);
-        });
-      }
-    } catch {
-      setStatusTitle('No se pudo reproducir la canción');
-      setStatusArtist('Revisá el archivo cargado en el panel de administración');
-      setIsPlaying(false);
-    }
-  }, [config.artistName]);
+    },
+    [config.artistName]
+  );
 
   const handleEnter = (withMusic: boolean) => {
     setMusicEnabled(withMusic);
@@ -367,8 +345,13 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
   const showTicker = entered && musicEnabled && isPlaying;
   const currentYear = new Date().getFullYear();
 
+  const resolvedPortrait =
+    !config.portraitImage || config.portraitImage === '/material/imagenes/personaje.png'
+      ? `${import.meta.env.BASE_URL}material/imagenes/personaje.png`
+      : config.portraitImage;
+
   return (
-    <>
+    <MotionConfig reducedMotion="user">
       <audio
         ref={audioRef}
         id="audioPlayer"
@@ -440,15 +423,31 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
         </header>
 
         <main>
+          {/* 01 / HERO — Portrait scales larger and reveals progressively on first scroll */}
           <section id="inicio" className="hero scene">
-            <div className="hero-copy">
-              <p className="eyebrow reveal">{config.heroEyebrow}</p>
-              <h1 className="hero-title reveal">{config.artistName}</h1>
-              <a className="text-link reveal" href="#musica">
+            <motion.div
+              className="hero-copy"
+              initial={{ opacity: 0, x: -34 }}
+              animate={entered ? { opacity: 1, x: 0 } : { opacity: 0, x: -34 }}
+              transition={{ duration: 0.75, ease: EASE_OUT_EXPO }}
+            >
+              <p className="eyebrow">{config.heroEyebrow}</p>
+              <h1 className="hero-title">{config.artistName}</h1>
+              <a className="text-link" href="#musica">
                 DESCUBRIR LA MÚSICA <span>↓</span>
               </a>
-            </div>
-            <div className="hero-art" aria-hidden="true">
+            </motion.div>
+
+            <motion.div
+              className="hero-art"
+              aria-hidden="true"
+              style={{
+                opacity: portraitOpacity,
+                scale: portraitScale,
+                x: portraitX,
+                y: portraitY,
+              }}
+            >
               {config.backgroundImage && !bgImgFailed ? (
                 <img
                   className="hero-art-background"
@@ -461,38 +460,46 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
                 <img
                   id="artistPortrait"
                   className="hero-art-person"
-                  src={
-                    !config.portraitImage ||
-                    config.portraitImage === '/material/imagenes/personaje.png'
-                      ? `${import.meta.env.BASE_URL}material/imagenes/personaje.png`
-                      : config.portraitImage
-                  }
+                  src={resolvedPortrait}
                   alt=""
                   onError={() => setPortraitFailed(true)}
                 />
               )}
-            </div>
+            </motion.div>
+
             <div className="hero-bottom">
               <span>01 / UNIVERSO</span>
               <span>DESLIZÁ PARA EXPLORAR</span>
             </div>
           </section>
 
+          {/* PLATAFORMAS — Heading enters from left, buttons cascade upward */}
           <section className="platform-access section" aria-label="Accesos oficiales a las plataformas">
-            <div className="platform-access-heading">
+            <motion.div
+              className="platform-access-heading"
+              initial={{ opacity: 0, x: -48 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={VIEWPORT_CFG}
+              transition={{ duration: 0.7, ease: EASE_OUT_EXPO }}
+            >
               <p className="eyebrow">CONECTÁ CON {config.artistName}</p>
               <h2>
                 ENCONTRALO EN <span>PLATAFORMAS</span>
               </h2>
               <p>Accedé directamente a su música y contenido.</p>
-            </div>
+            </motion.div>
+
             <div className="platform-buttons" id="platformButtons">
-              <a
+              <motion.a
                 className="platform-button platform-youtube"
                 href={youtubeHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`Abrir canal de ${config.artistName} en YouTube`}
+                initial={{ opacity: 0, y: 28, scale: 0.94 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={VIEWPORT_CFG}
+                transition={{ duration: 0.55, delay: 0.05, ease: EASE_OUT_EXPO }}
               >
                 <span className="platform-symbol" aria-hidden="true">
                   ▶
@@ -501,13 +508,17 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
                 <span className="platform-arrow" aria-hidden="true">
                   ↗
                 </span>
-              </a>
-              <a
+              </motion.a>
+              <motion.a
                 className="platform-button platform-spotify"
                 href={spotifyHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`Abrir perfil de ${config.artistName} en Spotify`}
+                initial={{ opacity: 0, y: 28, scale: 0.94 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={VIEWPORT_CFG}
+                transition={{ duration: 0.55, delay: 0.14, ease: EASE_OUT_EXPO }}
               >
                 <span className="platform-symbol platform-spotify-symbol" aria-hidden="true">
                   ≋
@@ -516,13 +527,17 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
                 <span className="platform-arrow" aria-hidden="true">
                   ↗
                 </span>
-              </a>
-              <a
+              </motion.a>
+              <motion.a
                 className="platform-button platform-instagram"
                 href={instagramHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`Abrir perfil de ${config.artistName} en Instagram`}
+                initial={{ opacity: 0, y: 28, scale: 0.94 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={VIEWPORT_CFG}
+                transition={{ duration: 0.55, delay: 0.23, ease: EASE_OUT_EXPO }}
               >
                 <span className="platform-symbol platform-instagram-symbol" aria-hidden="true">
                   ◎
@@ -531,12 +546,19 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
                 <span className="platform-arrow" aria-hidden="true">
                   ↗
                 </span>
-              </a>
+              </motion.a>
             </div>
           </section>
 
+          {/* 02 / VISIÓN — Cinematic sweep from the right */}
           <section className="cinema scene" id="universo">
-            <div className="cinema-content">
+            <motion.div
+              className="cinema-content"
+              initial={{ opacity: 0, x: 56, scale: 0.96 }}
+              whileInView={{ opacity: 1, x: 0, scale: 1 }}
+              viewport={VIEWPORT_CFG}
+              transition={{ duration: 0.8, ease: EASE_OUT_EXPO }}
+            >
               <p className="eyebrow">EL SONIDO, MÁS ALLÁ DEL BEAT</p>
               <h2>
                 UNA HISTORIA.
@@ -544,12 +566,19 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
                 <span>MUCHAS FRECUENCIAS.</span>
               </h2>
               <p className="cinema-note">Música, imágenes y movimiento en un mismo lugar.</p>
-            </div>
+            </motion.div>
             <div className="section-index">02 / VISIÓN</div>
           </section>
 
+          {/* MÚSICA — Heading slides from left, now-playing card glides in from right */}
           <section id="musica" className="music-section section">
-            <div className="section-heading">
+            <motion.div
+              className="section-heading"
+              initial={{ opacity: 0, x: -48 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={VIEWPORT_CFG}
+              transition={{ duration: 0.7, ease: EASE_OUT_EXPO }}
+            >
               <p className="eyebrow">SELECCIÓN SONORA</p>
               <h2>
                 SONANDO <span>AHORA</span>
@@ -558,155 +587,381 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
                 Si elegís entrar con música, los temas se reproducen automáticamente. La selección
                 se administra desde el panel, sin controles para cambiar de canción.
               </p>
-            </div>
-            <div className="now-playing-card" aria-live="polite">
+            </motion.div>
+            <motion.div
+              className="now-playing-card"
+              aria-live="polite"
+              initial={{ opacity: 0, x: 48 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={VIEWPORT_CFG}
+              transition={{ duration: 0.72, delay: 0.08, ease: EASE_OUT_EXPO }}
+            >
               <span className="now-playing-dot" />
               <div>
                 <p className="eyebrow">REPRODUCCIÓN ACTUAL</p>
                 <strong id="trackStatusTitle">{statusTitle}</strong>
                 <p id="trackStatusArtist">{statusArtist}</p>
               </div>
-            </div>
+            </motion.div>
           </section>
 
+          {/* 03 / BIO — Number glides from left, biography paragraphs stagger from right */}
           <section id="historia" className="bio-section section">
-            <div className="bio-number">03</div>
-            <div className="bio-copy">
+            <motion.div
+              className="bio-number"
+              initial={{ opacity: 0, x: -54 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={VIEWPORT_CFG}
+              transition={{ duration: 0.75, ease: EASE_OUT_EXPO }}
+            >
+              03
+            </motion.div>
+            <motion.div
+              className="bio-copy"
+              initial={{ opacity: 0, x: 44 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={VIEWPORT_CFG}
+              transition={{ duration: 0.75, delay: 0.08, ease: EASE_OUT_EXPO }}
+            >
               <p className="eyebrow">DE CATAMARCA AL SONIDO</p>
               <h2>{config.artistName}</h2>
               <p className="bio-lead">{config.bioLead}</p>
               <p>{config.bioBody1}</p>
               <p>{config.bioBody2}</p>
               <p className="credits-line">{config.bioCredits}</p>
-            </div>
+            </motion.div>
           </section>
 
+          {/* GALERÍA — Heading enters from left, cards rise with stagger */}
           <section id="galeria" className="gallery-section section">
-            <div className="section-heading">
+            <motion.div
+              className="section-heading"
+              initial={{ opacity: 0, x: -46 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={VIEWPORT_CFG}
+              transition={{ duration: 0.7, ease: EASE_OUT_EXPO }}
+            >
               <p className="eyebrow">IMÁGENES Y MOMENTOS</p>
               <h2>
                 OTROS <span>PLANOS</span>
               </h2>
               <p>Imágenes seleccionadas del universo de {config.artistName}.</p>
-            </div>
+            </motion.div>
             <div id="galleryItems" className="gallery-track" aria-label="Galería de imágenes">
               {gallery.length === 0 ? (
-                <p className="empty-state">
+                <motion.p
+                  className="empty-state"
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={VIEWPORT_CFG}
+                  transition={{ duration: 0.6, ease: EASE_OUT_EXPO }}
+                >
                   Las imágenes se podrán agregar desde el panel de administración.
-                </p>
+                </motion.p>
               ) : (
-                gallery.map((item) => (
-                  <figure key={item.id} className="gallery-card">
+                gallery.map((item, idx) => (
+                  <motion.figure
+                    key={item.id}
+                    className="gallery-card"
+                    initial={{ opacity: 0, y: 34, scale: 0.94 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={VIEWPORT_CFG}
+                    transition={{
+                      duration: 0.65,
+                      delay: Math.min(idx * 0.08, 0.32),
+                      ease: EASE_OUT_EXPO,
+                    }}
+                  >
                     <img
                       src={item.imageUrl}
                       alt={item.title || `Imagen de ${config.artistName}`}
                       loading="lazy"
                     />
                     {item.title ? <figcaption>{item.title}</figcaption> : null}
-                  </figure>
+                  </motion.figure>
                 ))
               )}
             </div>
           </section>
 
+          {/* COLABORACIONES — Featured Artists Spotlight + Compact Collabs with "Ver más" */}
           <section id="colaboraciones" className="collabs-section section">
-            <div className="section-heading">
+            <motion.div
+              className="section-heading"
+              initial={{ opacity: 0, x: 46 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={VIEWPORT_CFG}
+              transition={{ duration: 0.7, ease: EASE_OUT_EXPO }}
+            >
               <p className="eyebrow">ENCUENTROS MUSICALES</p>
               <h2>
                 ALGUNAS <span>COLABS</span>
               </h2>
               <p>
-                Colaboraciones seleccionadas. Cada publicación puede incluir imagen o video y
-                enlaces disponibles.
+                Artistas destacados y colaboraciones seleccionadas. Tocá cualquier artista o tema
+                para ir directo a la canción.
               </p>
-            </div>
-            <div id="collaborationItems" className="collab-grid">
-              {collaborations.length === 0 ? (
-                <p className="empty-state">
-                  Las colaboraciones aparecerán aquí cuando se agreguen desde el panel de
-                  administración.
-                </p>
-              ) : (
-                collaborations.map((item) => {
-                  const yt = safeExternalLink(item.youtubeUrl);
-                  const sp = safeExternalLink(item.spotifyUrl);
-                  const ytId = getYoutubeId(item.youtubeUrl);
-                  const resolvedImage =
-                    item.imageUrl || (ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : '');
-                  const hasMedia = Boolean(item.videoUrl || resolvedImage);
-                  return (
-                    <article
-                      key={item.id}
-                      className={`collab-card${hasMedia ? '' : ' collab-card-text-only'}`}
-                    >
-                      {hasMedia && (
-                        <div className="collab-media-box">
-                          {item.videoUrl ? (
-                            <video
-                              className="collab-media"
-                              src={item.videoUrl}
-                              muted
-                              autoPlay
-                              loop
-                              playsInline
-                              preload="metadata"
-                            />
-                          ) : (
-                            <img
-                              className="collab-media"
-                              src={resolvedImage}
-                              alt={item.title}
-                              loading="lazy"
-                            />
-                          )}
+            </motion.div>
+
+            {collaborations.length === 0 ? (
+              <motion.p
+                className="empty-state"
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={VIEWPORT_CFG}
+                transition={{ duration: 0.6, ease: EASE_OUT_EXPO }}
+              >
+                Las colaboraciones aparecerán aquí cuando se agreguen desde el panel de
+                administración.
+              </motion.p>
+            ) : (
+              (() => {
+                const featuredArtists = collaborations.filter((c) => c.isFeaturedArtist);
+                const otherCollabs = collaborations.filter((c) => !c.isFeaturedArtist);
+                const INITIAL_VISIBLE_COLLABS = 3;
+                const visibleOtherCollabs = showAllCollabs
+                  ? otherCollabs
+                  : otherCollabs.slice(0, INITIAL_VISIBLE_COLLABS);
+                const hiddenCount = Math.max(0, otherCollabs.length - INITIAL_VISIBLE_COLLABS);
+
+                return (
+                  <div id="collaborationItems" className="collabs-showcase">
+                    {/* FEATURED ARTISTS SPOTLIGHT */}
+                    {featuredArtists.length > 0 && (
+                      <div className="featured-artists-block">
+                        <p className="collab-sublabel">ARTISTAS DESTACADOS</p>
+                        <div className="featured-artists-grid">
+                          {featuredArtists.map((item, idx) => {
+                            const yt = safeExternalLink(item.youtubeUrl);
+                            const sp = safeExternalLink(item.spotifyUrl);
+                            const primaryHref = yt || sp;
+                            const primaryPlatform = yt ? 'YouTube' : sp ? 'Spotify' : '';
+                            const ytId = getYoutubeId(item.youtubeUrl);
+                            const artistImg =
+                              item.artistPhotoUrl ||
+                              item.imageUrl ||
+                              (ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : '');
+                            const displayName = item.artistName || item.title;
+                            const artistNote = item.artistDescription || item.description;
+                            const enterX = idx % 3 === 0 ? -36 : idx % 3 === 2 ? 36 : 0;
+
+                            const cardContent = (
+                              <>
+                                <div className="featured-artist-photo">
+                                  {artistImg ? (
+                                    <img
+                                      src={artistImg}
+                                      alt={displayName}
+                                      loading="lazy"
+                                    />
+                                  ) : (
+                                    <div className="featured-artist-fallback" aria-hidden="true">
+                                      {displayName.slice(0, 1).toUpperCase()}
+                                    </div>
+                                  )}
+                                  {primaryHref && (
+                                    <span
+                                      className={`featured-artist-badge ${
+                                        yt ? 'badge-youtube' : 'badge-spotify'
+                                      }`}
+                                      aria-hidden="true"
+                                    >
+                                      {yt ? '▶' : '≋'}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="featured-artist-info">
+                                  <h3>{displayName}</h3>
+                                  {item.artistName && item.title && (
+                                    <p className="featured-artist-song">{item.title}</p>
+                                  )}
+                                  {artistNote && (
+                                    <p className="featured-artist-desc">{artistNote}</p>
+                                  )}
+                                  {primaryPlatform && (
+                                    <span className="featured-artist-cta">
+                                      {yt ? '▶' : '≋'} Escuchar en {primaryPlatform} ↗
+                                    </span>
+                                  )}
+                                </div>
+                              </>
+                            );
+
+                            return (
+                              <motion.article
+                                key={item.id}
+                                className="featured-artist-card"
+                                initial={{ opacity: 0, x: enterX, y: 26 }}
+                                whileInView={{ opacity: 1, x: 0, y: 0 }}
+                                viewport={VIEWPORT_CFG}
+                                transition={{
+                                  duration: 0.68,
+                                  delay: Math.min((idx % 3) * 0.08, 0.24),
+                                  ease: EASE_OUT_EXPO,
+                                }}
+                              >
+                                {primaryHref ? (
+                                  <a
+                                    className="featured-artist-main"
+                                    href={primaryHref}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label={`Abrir colaboración con ${displayName} en ${primaryPlatform}`}
+                                  >
+                                    {cardContent}
+                                  </a>
+                                ) : (
+                                  <div className="featured-artist-main">{cardContent}</div>
+                                )}
+
+                                {yt && sp && (
+                                  <a
+                                    className="featured-artist-alt-link"
+                                    href={sp}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    ≋ También en Spotify ↗
+                                  </a>
+                                )}
+                              </motion.article>
+                            );
+                          })}
                         </div>
-                      )}
-                      <div className="collab-body">
-                        <h3>{item.title}</h3>
-                        {item.description ? (
-                          <p className="collab-description">{item.description}</p>
-                        ) : null}
-                        {(yt || sp) && (
-                          <div className="collab-links">
-                            {yt && (
-                              <a
-                                className="platform-button platform-youtube collab-platform-button"
-                                href={yt}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                      </div>
+                    )}
+
+                    {/* COMPACT COLLABORATIONS LIST (SHOWS 3 INITIALLY + "VER MÁS") */}
+                    {otherCollabs.length > 0 && (
+                      <div className="compact-collabs-block">
+                        {featuredArtists.length > 0 && (
+                          <p className="collab-sublabel">MÁS COLABORACIONES</p>
+                        )}
+                        <div className="collab-grid collab-grid-compact">
+                          {visibleOtherCollabs.map((item, idx) => {
+                            const yt = safeExternalLink(item.youtubeUrl);
+                            const sp = safeExternalLink(item.spotifyUrl);
+                            const ytId = getYoutubeId(item.youtubeUrl);
+                            const resolvedImage =
+                              item.imageUrl ||
+                              (ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : '');
+                            const hasMedia = Boolean(item.videoUrl || resolvedImage);
+                            const fromLeft = idx % 2 === 0;
+
+                            return (
+                              <motion.article
+                                key={item.id}
+                                className={`collab-card${hasMedia ? '' : ' collab-card-text-only'}`}
+                                initial={{ opacity: 0, x: fromLeft ? -34 : 34 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={VIEWPORT_CFG}
+                                transition={{
+                                  duration: 0.6,
+                                  delay: Math.min((idx % 3) * 0.07, 0.21),
+                                  ease: EASE_OUT_EXPO,
+                                }}
                               >
-                                ▶ YouTube ↗
-                              </a>
-                            )}
-                            {sp && (
-                              <a
-                                className="platform-button platform-spotify collab-platform-button"
-                                href={sp}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                Spotify ↗
-                              </a>
-                            )}
+                                {hasMedia && (
+                                  <div className="collab-media-box">
+                                    {item.videoUrl ? (
+                                      <video
+                                        className="collab-media"
+                                        src={item.videoUrl}
+                                        muted
+                                        autoPlay
+                                        loop
+                                        playsInline
+                                        preload="metadata"
+                                      />
+                                    ) : (
+                                      <img
+                                        className="collab-media"
+                                        src={resolvedImage}
+                                        alt={item.title}
+                                        loading="lazy"
+                                      />
+                                    )}
+                                  </div>
+                                )}
+                                <div className="collab-body">
+                                  <h3>{item.title}</h3>
+                                  {item.description ? (
+                                    <p className="collab-description">{item.description}</p>
+                                  ) : null}
+                                  {(yt || sp) && (
+                                    <div className="collab-links">
+                                      {yt && (
+                                        <a
+                                          className="platform-button platform-youtube collab-platform-button"
+                                          href={yt}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                        >
+                                          ▶ YouTube ↗
+                                        </a>
+                                      )}
+                                      {sp && (
+                                        <a
+                                          className="platform-button platform-spotify collab-platform-button"
+                                          href={sp}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                        >
+                                          Spotify ↗
+                                        </a>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </motion.article>
+                            );
+                          })}
+                        </div>
+
+                        {hiddenCount > 0 && (
+                          <div className="collab-toggle-wrap">
+                            <button
+                              type="button"
+                              className="smokk-btn button-outline collab-toggle-btn"
+                              onClick={() => setShowAllCollabs((prev) => !prev)}
+                            >
+                              {showAllCollabs
+                                ? 'VER MENOS COLABORACIONES ↑'
+                                : `VER MÁS COLABORACIONES (+${hiddenCount}) ↓`}
+                            </button>
                           </div>
                         )}
                       </div>
-                    </article>
-                  );
-                })
-              )}
-            </div>
+                    )}
+                  </div>
+                );
+              })()
+            )}
           </section>
 
+          {/* ÚLTIMO ESTRENO — Heading from left, YouTube player scales cleanly */}
           <section id="lanzamiento" className="release-section section">
-            <div className="section-heading">
+            <motion.div
+              className="section-heading"
+              initial={{ opacity: 0, x: -46 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={VIEWPORT_CFG}
+              transition={{ duration: 0.7, ease: EASE_OUT_EXPO }}
+            >
               <p className="eyebrow">VIDEO DESTACADO</p>
               <h2>
                 ÚLTIMO <span>ESTRENO</span>
               </h2>
               <p id="releaseDescription">{config.featuredVideoDescription}</p>
-            </div>
-            <div className="youtube-frame" id="featuredVideoWrap">
+            </motion.div>
+            <motion.div
+              className="youtube-frame"
+              id="featuredVideoWrap"
+              initial={{ opacity: 0, y: 36, scale: 0.95 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={VIEWPORT_CFG}
+              transition={{ duration: 0.75, ease: EASE_OUT_EXPO }}
+            >
               <iframe
                 id="featuredVideo"
                 src={`https://www.youtube-nocookie.com/embed/${featuredYoutubeId}`}
@@ -716,29 +971,39 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
                 referrerPolicy="strict-origin-when-cross-origin"
                 allowFullScreen
               />
-            </div>
+            </motion.div>
             <p className="release-caption" id="releaseTitle">
               {config.featuredVideoTitle}
             </p>
           </section>
 
+          {/* CANAL CTA — Text from left, red button from right */}
           <section className="always-video section">
-            <div>
+            <motion.div
+              initial={{ opacity: 0, x: -44 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={VIEWPORT_CFG}
+              transition={{ duration: 0.7, ease: EASE_OUT_EXPO }}
+            >
               <p className="eyebrow">EN EL CANAL</p>
               <h2>
                 SEGUÍ <span>EXPLORANDO</span>
               </h2>
               <p>Un espacio permanente para ver videos del artista.</p>
-            </div>
-            <a
+            </motion.div>
+            <motion.a
               className="smokk-btn button-red"
               id="channelButton"
               href={youtubeHref}
               target="_blank"
               rel="noopener noreferrer"
+              initial={{ opacity: 0, x: 44 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={VIEWPORT_CFG}
+              transition={{ duration: 0.7, delay: 0.08, ease: EASE_OUT_EXPO }}
             >
               VER CANAL DE YOUTUBE ↗
-            </a>
+            </motion.a>
           </section>
         </main>
 
@@ -825,6 +1090,6 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
           </a>
         </div>
       </div>
-    </>
+    </MotionConfig>
   );
 };
