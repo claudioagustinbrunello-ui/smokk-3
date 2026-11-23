@@ -74,6 +74,10 @@ export interface Collaboration {
   videoUrl: string;
   youtubeUrl: string;
   spotifyUrl: string;
+  isFeaturedArtist: boolean;
+  artistName: string;
+  artistPhotoUrl: string;
+  artistDescription: string;
   order: number;
   isPublic: boolean;
   ownerId: string;
@@ -108,6 +112,9 @@ export const SCHEMA_LIMITS = {
   galleryTitle: 140,
   collabTitle: 140,
   collabDescription: 500,
+  collabArtistName: 100,
+  collabArtistPhotoUrl: 500000,
+  collabArtistDescription: 240,
 } as const;
 
 export const DEFAULT_SITE_CONFIG: SiteConfig = {
