@@ -1,0 +1,8 @@
+{
+  "name": "SMOKK — Experiencia oficial",
+  "description": "La experiencia musical oficial de SMOKK. Música, videos, lanzamientos y panel de administración con Firebase.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,451 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =========================================================================
+    // GLOBAL SAFETY NET — Default Deny
+    // =========================================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // =========================================================================
+    // GLOBAL PRIMITIVES
+    // =========================================================================
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isBootstrappedAdmin() {
+      return isVerifiedUser() &&
+        request.auth.token.email == 'claudioagustinbrunello@gmail.com';
+    }
+
+    function isAdmin() {
+      return isBootstrappedAdmin() || (
+        isVerifiedUser() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // =========================================================================
+    // VALIDATION BLUEPRINTS
+    // =========================================================================
+    function isValidSiteConfig(data) {
+      return data.keys().hasAll([
+          'artistName', 'heroEyebrow', 'introKicker', 'introCaption',
+          'youtubeUrl', 'spotifyUrl', 'instagramUrl', 'contactLine',
+          'featuredVideoUrl', 'featuredVideoTitle', 'featuredVideoDescription',
+          'bioLead', 'bioBody1', 'bioBody2', 'bioCredits',
+          'portraitImage', 'backgroundImage', 'backgroundVideoUrl',
+          'isPublic', 'updatedAt', 'updatedBy'
+        ]) &&
+        data.keys().hasOnly([
+          'artistName', 'heroEyebrow', 'introKicker', 'introCaption',
+          'youtubeUrl', 'spotifyUrl', 'instagramUrl', 'contactLine',
+          'featuredVideoUrl', 'featuredVideoTitle', 'featuredVideoDescription',
+          'bioLead', 'bioBody1', 'bioBody2', 'bioCredits',
+          'portraitImage', 'backgroundImage', 'backgroundVideoUrl',
+          'isPublic', 'updatedAt', 'updatedBy'
+        ]) &&
+        data.artistName is string && data.artistName.size() >= 1 && data.artistName.size() <= 80 &&
+        data.heroEyebrow is string && data.heroEyebrow.size() <= 120 &&
+        data.introKicker is string && data.introKicker.size() <= 100 &&
+        data.introCaption is string && data.introCaption.size() <= 100 &&
+        data.youtubeUrl is string && data.youtubeUrl.size() <= 300 &&
+        data.spotifyUrl is string && data.spotifyUrl.size() <= 300 &&
+        data.instagramUrl is string && data.instagramUrl.size() <= 300 &&
+        data.contactLine is string && data.contactLine.size() <= 120 &&
+        data.featuredVideoUrl is string && data.featuredVideoUrl.size() <= 300 &&
+        data.featuredVideoTitle is string && data.featuredVideoTitle.size() <= 140 &&
+        data.featuredVideoDescription is string && data.featuredVideoDescription.size() <= 400 &&
+        data.bioLead is string && data.bioLead.size() <= 400 &&
+        data.bioBody1 is string && data.bioBody1.size() <= 800 &&
+        data.bioBody2 is string && data.bioBody2.size() <= 500 &&
+        data.bioCredits is string && data.bioCredits.size() <= 500 &&
+        data.portraitImage is string && data.portraitImage.size() <= 650000 &&
+        data.backgroundImage is string && data.backgroundImage.size() <= 650000 &&
+        data.backgroundVideoUrl is string && data.backgroundVideoUrl.size() <= 400 &&
+        data.isPublic is bool &&
+        data.updatedAt is timestamp &&
+        data.updatedBy is string && data.updatedBy.size() >= 1 && data.updatedBy.size() <= 128 &&
+        data.updatedBy == request.auth.uid;
+    }
+
+    function isValidTrack(data) {
+      return data.keys().hasAll([
+          'title', 'artist', 'sourceType', 'audioUrl', 'mimeType',
+          'fileName', 'fileSize', 'chunkCount', 'order', 'isPublic',
+          'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'title', 'artist', 'sourceType', 'audioUrl', 'mimeType',
+          'fileName', 'fileSize', 'chunkCount', 'order', 'isPublic',
+          'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 120 &&
+        data.artist is string && data.artist.size() >= 1 && data.artist.size() <= 120 &&
+        data.sourceType is string && data.sourceType in ['upload', 'url'] &&
+        data.audioUrl is string && data.audioUrl.size() <= 500 &&
+        data.mimeType is string && data.mimeType.size() <= 80 &&
+        data.fileName is string && data.fileName.size() <= 160 &&
+        data.fileSize is number && data.fileSize >= 0 && data.fileSize <= 20000000 &&
+        data.chunkCount is int && data.chunkCount >= 0 && data.chunkCount <= 45 &&
+        data.order is number && data.order >= 0 && data.order <= 1000 &&
+        data.isPublic is bool &&
+        data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidTrackChunk(data, trackId) {
+      return data.keys().hasAll([
+          'trackId', 'index', 'data', 'isPublic', 'ownerId', 'createdAt'
+        ]) &&
+        data.keys().hasOnly([
+          'trackId', 'index', 'data', 'isPublic', 'ownerId', 'createdAt'
+        ]) &&
+        data.trackId is string && isValidId(data.trackId) && data.trackId == trackId &&
+        data.index is int && data.index >= 0 && data.index <= 45 &&
+        data.data is string && data.data.size() >= 1 && data.data.size() <= 650000 &&
+        data.isPublic is bool &&
+        data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 &&
+        data.createdAt is timestamp;
+    }
+
+    function isValidGalleryItem(data) {
+      return data.keys().hasAll([
+          'title', 'imageUrl', 'order', 'isPublic', 'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'title', 'imageUrl', 'order', 'isPublic', 'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        data.title is string && data.title.size() <= 140 &&
+        data.imageUrl is string && data.imageUrl.size() >= 1 && data.imageUrl.size() <= 650000 &&
+        data.order is number && data.order >= 0 && data.order <= 1000 &&
+        data.isPublic is bool &&
+        data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidCollaboration(data) {
+      return data.keys().hasAll([
+          'title', 'description', 'imageUrl', 'videoUrl', 'youtubeUrl',
+          'spotifyUrl', 'order', 'isPublic', 'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'title', 'description', 'imageUrl', 'videoUrl', 'youtubeUrl',
+          'spotifyUrl', 'order', 'isPublic', 'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 140 &&
+        data.description is string && data.description.size() <= 500 &&
+        data.imageUrl is string && data.imageUrl.size() <= 650000 &&
+        data.videoUrl is string && data.videoUrl.size() <= 500 &&
+        data.youtubeUrl is string && data.youtubeUrl.size() <= 300 &&
+        data.spotifyUrl is string && data.spotifyUrl.size() <= 300 &&
+        data.order is number && data.order >= 0 && data.order <= 1000 &&
+        data.isPublic is bool &&
+        data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidAdminRecord(data) {
+      return data.keys().hasAll(['role', 'displayName', 'createdBy', 'createdAt']) &&
+        data.keys().hasOnly(['role', 'displayName', 'createdBy', 'createdAt']) &&
+        data.role is string && data.role == 'admin' &&
+        data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 120 &&
+        data.createdBy is string && data.createdBy.size() >= 1 && data.createdBy.size() <= 128 &&
+        data.createdBy == request.auth.uid &&
+        data.createdAt is timestamp;
+    }
+
+    function isValidMediaAsset(data) {
+      return data.keys().hasAll([
+          'kind', 'mimeType', 'fileName', 'fileSize', 'chunkCount',
+          'isPublic', 'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'kind', 'mimeType', 'fileName', 'fileSize', 'chunkCount',
+          'isPublic', 'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        data.kind is string && data.kind in ['background_video'] &&
+        data.mimeType is string && data.mimeType.size() >= 1 && data.mimeType.size() <= 80 &&
+        data.fileName is string && data.fileName.size() >= 1 && data.fileName.size() <= 160 &&
+        data.fileSize is number && data.fileSize >= 1 && data.fileSize <= 20000000 &&
+        data.chunkCount is int && data.chunkCount >= 1 && data.chunkCount <= 45 &&
+        data.isPublic is bool &&
+        data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidMediaChunk(data, assetId) {
+      return data.keys().hasAll([
+          'assetId', 'index', 'data', 'isPublic', 'ownerId', 'createdAt'
+        ]) &&
+        data.keys().hasOnly([
+          'assetId', 'index', 'data', 'isPublic', 'ownerId', 'createdAt'
+        ]) &&
+        data.assetId is string && isValidId(data.assetId) && data.assetId == assetId &&
+        data.index is int && data.index >= 0 && data.index <= 45 &&
+        data.data is string && data.data.size() >= 1 && data.data.size() <= 650000 &&
+        data.isPublic is bool &&
+        data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 &&
+        data.createdAt is timestamp;
+    }
+
+    // =========================================================================
+    // COLLECTION: site_config (single document: main)
+    // =========================================================================
+    match /site_config/{configId} {
+      allow get: if isValidId(configId) && configId == 'main' &&
+        (resource == null || existing().isPublic == true || isAdmin());
+      allow list: if false;
+
+      allow create: if isVerifiedUser() &&
+        isValidId(configId) &&
+        configId == 'main' &&
+        isValidSiteConfig(incoming()) &&
+        incoming().updatedAt == request.time &&
+        isAdmin();
+
+      allow update: if isVerifiedUser() &&
+        isValidId(configId) &&
+        configId == 'main' &&
+        isValidSiteConfig(incoming()) &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'artistName', 'heroEyebrow', 'introKicker', 'introCaption',
+          'youtubeUrl', 'spotifyUrl', 'instagramUrl', 'contactLine',
+          'featuredVideoUrl', 'featuredVideoTitle', 'featuredVideoDescription',
+          'bioLead', 'bioBody1', 'bioBody2', 'bioCredits',
+          'portraitImage', 'backgroundImage', 'backgroundVideoUrl',
+          'isPublic', 'updatedAt', 'updatedBy'
+        ]) &&
+        isAdmin();
+
+      allow delete: if false;
+    }
+
+    // =========================================================================
+    // COLLECTION: media_assets & SUBCOLLECTION: chunks (background video)
+    // =========================================================================
+    match /media_assets/{assetId} {
+      allow get: if isValidId(assetId) &&
+        (resource == null || existing().isPublic == true || isAdmin());
+      allow list: if existing().isPublic == true || isBootstrappedAdmin();
+
+      allow create: if isVerifiedUser() &&
+        isValidId(assetId) &&
+        isValidMediaAsset(incoming()) &&
+        incoming().ownerId == request.auth.uid &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        isAdmin();
+
+      allow update: if isVerifiedUser() &&
+        isValidId(assetId) &&
+        isValidMediaAsset(incoming()) &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'kind', 'mimeType', 'fileName', 'fileSize', 'chunkCount', 'isPublic', 'updatedAt'
+        ]) &&
+        isAdmin();
+
+      allow delete: if isVerifiedUser() && isValidId(assetId) && isAdmin();
+
+      match /chunks/{chunkId} {
+        allow get: if isValidId(assetId) && isValidId(chunkId) &&
+          (existing().isPublic == true || isAdmin());
+        allow list: if isValidId(assetId) &&
+          (existing().isPublic == true || isBootstrappedAdmin());
+
+        allow create: if isVerifiedUser() &&
+          isValidId(assetId) &&
+          isValidId(chunkId) &&
+          isValidMediaChunk(incoming(), assetId) &&
+          incoming().ownerId == request.auth.uid &&
+          incoming().createdAt == request.time &&
+          exists(/databases/$(database)/documents/media_assets/$(assetId)) &&
+          isAdmin();
+
+        allow update: if isVerifiedUser() &&
+          isValidId(assetId) &&
+          isValidId(chunkId) &&
+          isValidMediaChunk(incoming(), assetId) &&
+          incoming().ownerId == existing().ownerId &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().assetId == existing().assetId &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['index', 'data', 'isPublic']) &&
+          exists(/databases/$(database)/documents/media_assets/$(assetId)) &&
+          isAdmin();
+
+        allow delete: if isVerifiedUser() && isValidId(assetId) && isValidId(chunkId) && isAdmin();
+      }
+    }
+
+    // =========================================================================
+    // COLLECTION: tracks & SUBCOLLECTION: chunks
+    // =========================================================================
+    match /tracks/{trackId} {
+      allow get: if isValidId(trackId) &&
+        (resource == null || existing().isPublic == true || isAdmin());
+      allow list: if existing().isPublic == true || isBootstrappedAdmin();
+
+      allow create: if isVerifiedUser() &&
+        isValidId(trackId) &&
+        isValidTrack(incoming()) &&
+        incoming().ownerId == request.auth.uid &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        isAdmin();
+
+      allow update: if isVerifiedUser() &&
+        isValidId(trackId) &&
+        isValidTrack(incoming()) &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'title', 'artist', 'sourceType', 'audioUrl', 'mimeType',
+          'fileName', 'fileSize', 'chunkCount', 'order', 'isPublic', 'updatedAt'
+        ]) &&
+        isAdmin();
+
+      allow delete: if isVerifiedUser() && isValidId(trackId) && isAdmin();
+
+      match /chunks/{chunkId} {
+        allow get: if isValidId(trackId) && isValidId(chunkId) &&
+          (existing().isPublic == true || isAdmin());
+        allow list: if isValidId(trackId) &&
+          (existing().isPublic == true || isBootstrappedAdmin());
+
+        allow create: if isVerifiedUser() &&
+          isValidId(trackId) &&
+          isValidId(chunkId) &&
+          isValidTrackChunk(incoming(), trackId) &&
+          incoming().ownerId == request.auth.uid &&
+          incoming().createdAt == request.time &&
+          exists(/databases/$(database)/documents/tracks/$(trackId)) &&
+          isAdmin();
+
+        allow update: if isVerifiedUser() &&
+          isValidId(trackId) &&
+          isValidId(chunkId) &&
+          isValidTrackChunk(incoming(), trackId) &&
+          incoming().ownerId == existing().ownerId &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().trackId == existing().trackId &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['index', 'data', 'isPublic']) &&
+          exists(/databases/$(database)/documents/tracks/$(trackId)) &&
+          isAdmin();
+
+        allow delete: if isVerifiedUser() && isValidId(trackId) && isValidId(chunkId) && isAdmin();
+      }
+    }
+
+    // =========================================================================
+    // COLLECTION: gallery
+    // =========================================================================
+    match /gallery/{itemId} {
+      allow get: if isValidId(itemId) &&
+        (resource == null || existing().isPublic == true || isAdmin());
+      allow list: if existing().isPublic == true || isBootstrappedAdmin();
+
+      allow create: if isVerifiedUser() &&
+        isValidId(itemId) &&
+        isValidGalleryItem(incoming()) &&
+        incoming().ownerId == request.auth.uid &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        isAdmin();
+
+      allow update: if isVerifiedUser() &&
+        isValidId(itemId) &&
+        isValidGalleryItem(incoming()) &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'title', 'imageUrl', 'order', 'isPublic', 'updatedAt'
+        ]) &&
+        isAdmin();
+
+      allow delete: if isVerifiedUser() && isValidId(itemId) && isAdmin();
+    }
+
+    // =========================================================================
+    // COLLECTION: collaborations
+    // =========================================================================
+    match /collaborations/{collabId} {
+      allow get: if isValidId(collabId) &&
+        (resource == null || existing().isPublic == true || isAdmin());
+      allow list: if existing().isPublic == true || isBootstrappedAdmin();
+
+      allow create: if isVerifiedUser() &&
+        isValidId(collabId) &&
+        isValidCollaboration(incoming()) &&
+        incoming().ownerId == request.auth.uid &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        isAdmin();
+
+      allow update: if isVerifiedUser() &&
+        isValidId(collabId) &&
+        isValidCollaboration(incoming()) &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'title', 'description', 'imageUrl', 'videoUrl', 'youtubeUrl',
+          'spotifyUrl', 'order', 'isPublic', 'updatedAt'
+        ]) &&
+        isAdmin();
+
+      allow delete: if isVerifiedUser() && isValidId(collabId) && isAdmin();
+    }
+
+    // =========================================================================
+    // COLLECTION: admins
+    // =========================================================================
+    match /admins/{adminId} {
+      allow get: if isValidId(adminId) && isVerifiedUser() &&
+        (request.auth.uid == adminId || isAdmin());
+      allow list: if isBootstrappedAdmin();
+
+      allow create: if isVerifiedUser() &&
+        isValidId(adminId) &&
+        isValidAdminRecord(incoming()) &&
+        incoming().createdAt == request.time &&
+        isAdmin();
+
+      allow update: if false;
+
+      allow delete: if isVerifiedUser() &&
+        isValidId(adminId) &&
+        adminId != request.auth.uid &&
+        isAdmin();
+    }
+  }
+}

@@ -1,0 +1,553 @@
+{
+  "entities": {
+    "SiteConfig": {
+      "title": "SiteConfig",
+      "description": "Public site configuration, branding, bio, platform links, and featured video for SMOKK.",
+      "type": "object",
+      "properties": {
+        "artistName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Artist display name."
+        },
+        "heroEyebrow": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Hero eyebrow tagline."
+        },
+        "introKicker": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Intro overlay kicker."
+        },
+        "introCaption": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Intro overlay location caption."
+        },
+        "youtubeUrl": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "Official YouTube channel URL."
+        },
+        "spotifyUrl": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "Official Spotify artist URL."
+        },
+        "instagramUrl": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "Official Instagram profile URL."
+        },
+        "contactLine": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Public footer location or contact label."
+        },
+        "featuredVideoUrl": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "YouTube URL or video ID for the featured release embed."
+        },
+        "featuredVideoTitle": {
+          "type": "string",
+          "maxLength": 140,
+          "description": "Caption below the featured YouTube video."
+        },
+        "featuredVideoDescription": {
+          "type": "string",
+          "maxLength": 400,
+          "description": "Description above the featured YouTube video."
+        },
+        "bioLead": {
+          "type": "string",
+          "maxLength": 400,
+          "description": "Lead biography paragraph."
+        },
+        "bioBody1": {
+          "type": "string",
+          "maxLength": 800,
+          "description": "First body biography paragraph."
+        },
+        "bioBody2": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Second body biography paragraph."
+        },
+        "bioCredits": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Highlighted credits paragraph."
+        },
+        "portraitImage": {
+          "type": "string",
+          "maxLength": 650000,
+          "description": "Hero artist portrait path, URL, or compressed image data URL."
+        },
+        "backgroundImage": {
+          "type": "string",
+          "maxLength": 650000,
+          "description": "Optional hero background texture path, URL, or compressed image data URL."
+        },
+        "backgroundVideoUrl": {
+          "type": "string",
+          "maxLength": 400,
+          "description": "Optional direct MP4 URL for ambient looping backdrop video."
+        },
+        "isPublic": {
+          "type": "boolean",
+          "description": "Indicates public visibility."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of the last update."
+        },
+        "updatedBy": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "UID of the admin who updated the config."
+        }
+      },
+      "required": [
+        "artistName",
+        "heroEyebrow",
+        "introKicker",
+        "introCaption",
+        "youtubeUrl",
+        "spotifyUrl",
+        "instagramUrl",
+        "contactLine",
+        "featuredVideoUrl",
+        "featuredVideoTitle",
+        "featuredVideoDescription",
+        "bioLead",
+        "bioBody1",
+        "bioBody2",
+        "bioCredits",
+        "portraitImage",
+        "backgroundImage",
+        "backgroundVideoUrl",
+        "isPublic",
+        "updatedAt",
+        "updatedBy"
+      ]
+    },
+    "Track": {
+      "title": "Track",
+      "description": "An audio track in the SMOKK playlist. Supports direct MP3 upload (chunked in subcollection) or external MP3 URL.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Song title."
+        },
+        "artist": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Artist credits."
+        },
+        "sourceType": {
+          "type": "string",
+          "enum": ["upload", "url"],
+          "description": "Whether audio is stored as Firestore chunks or external URL."
+        },
+        "audioUrl": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Direct MP3 URL when sourceType is url, empty string when upload."
+        },
+        "mimeType": {
+          "type": "string",
+          "maxLength": 80,
+          "description": "MIME type of the audio file (e.g. audio/mpeg)."
+        },
+        "fileName": {
+          "type": "string",
+          "maxLength": 160,
+          "description": "Original filename of uploaded MP3."
+        },
+        "fileSize": {
+          "type": "number",
+          "description": "Size in bytes of uploaded audio file."
+        },
+        "chunkCount": {
+          "type": "number",
+          "description": "Total number of base64 chunks in the chunks subcollection."
+        },
+        "order": {
+          "type": "number",
+          "description": "Playback sort order."
+        },
+        "isPublic": {
+          "type": "boolean",
+          "description": "Whether this track is active on the public site."
+        },
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "UID of admin who created this track."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation server timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update server timestamp."
+        }
+      },
+      "required": [
+        "title",
+        "artist",
+        "sourceType",
+        "audioUrl",
+        "mimeType",
+        "fileName",
+        "fileSize",
+        "chunkCount",
+        "order",
+        "isPublic",
+        "ownerId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "TrackChunk": {
+      "title": "TrackChunk",
+      "description": "A single base64-encoded binary fragment of an uploaded MP3 track.",
+      "type": "object",
+      "properties": {
+        "trackId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Parent track document ID."
+        },
+        "index": {
+          "type": "number",
+          "description": "Zero-based chunk sequence index."
+        },
+        "data": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 650000,
+          "description": "Base64-encoded slice of the MP3 file."
+        },
+        "isPublic": {
+          "type": "boolean",
+          "description": "Matches parent public playback visibility."
+        },
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "UID of admin who uploaded this chunk."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation server timestamp."
+        }
+      },
+      "required": [
+        "trackId",
+        "index",
+        "data",
+        "isPublic",
+        "ownerId",
+        "createdAt"
+      ]
+    },
+    "GalleryItem": {
+      "title": "GalleryItem",
+      "description": "A gallery image card in the OTROS PLANOS section.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "maxLength": 140,
+          "description": "Optional image caption."
+        },
+        "imageUrl": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 650000,
+          "description": "Image URL or compressed data URL."
+        },
+        "order": {
+          "type": "number",
+          "description": "Display sort order."
+        },
+        "isPublic": {
+          "type": "boolean",
+          "description": "Whether visible on the public site."
+        },
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "UID of admin who added this image."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation server timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Update server timestamp."
+        }
+      },
+      "required": [
+        "title",
+        "imageUrl",
+        "order",
+        "isPublic",
+        "ownerId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Collaboration": {
+      "title": "Collaboration",
+      "description": "A featured collaboration card in the ALGUNAS COLABS section.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 140,
+          "description": "Collaboration title."
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Short description of the collaboration."
+        },
+        "imageUrl": {
+          "type": "string",
+          "maxLength": 650000,
+          "description": "Optional cover image URL or compressed data URL."
+        },
+        "videoUrl": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Optional direct MP4 URL for looping preview."
+        },
+        "youtubeUrl": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "Optional YouTube link."
+        },
+        "spotifyUrl": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "Optional Spotify link."
+        },
+        "order": {
+          "type": "number",
+          "description": "Display sort order."
+        },
+        "isPublic": {
+          "type": "boolean",
+          "description": "Whether visible on the public site."
+        },
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "UID of admin who created the collaboration."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation server timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Update server timestamp."
+        }
+      },
+      "required": [
+        "title",
+        "description",
+        "imageUrl",
+        "videoUrl",
+        "youtubeUrl",
+        "spotifyUrl",
+        "order",
+        "isPublic",
+        "ownerId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Authorized administrator registry (no PII stored).",
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": ["admin"],
+          "description": "Fixed admin role."
+        },
+        "displayName": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Admin label."
+        },
+        "createdBy": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "UID of the admin who granted access."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation server timestamp."
+        }
+      },
+      "required": ["role", "displayName", "createdBy", "createdAt"]
+    },
+    "MediaAsset": {
+      "title": "MediaAsset",
+      "description": "Metadata for an uploaded binary media asset such as the looping background video.",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["background_video"],
+          "description": "Type of managed media asset."
+        },
+        "mimeType": {
+          "type": "string",
+          "maxLength": 80,
+          "description": "MIME type of the uploaded media (e.g. video/mp4)."
+        },
+        "fileName": {
+          "type": "string",
+          "maxLength": 160,
+          "description": "Original filename."
+        },
+        "fileSize": {
+          "type": "number",
+          "description": "File size in bytes."
+        },
+        "chunkCount": {
+          "type": "number",
+          "description": "Number of base64 chunks stored in the chunks subcollection."
+        },
+        "isPublic": {
+          "type": "boolean",
+          "description": "Whether publicly readable on the website."
+        },
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "UID of admin who uploaded the asset."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation server timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update server timestamp."
+        }
+      },
+      "required": [
+        "kind",
+        "mimeType",
+        "fileName",
+        "fileSize",
+        "chunkCount",
+        "isPublic",
+        "ownerId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "MediaChunk": {
+      "title": "MediaChunk",
+      "description": "A single base64-encoded binary fragment of an uploaded media asset.",
+      "type": "object",
+      "properties": {
+        "assetId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Parent media asset document ID."
+        },
+        "index": {
+          "type": "number",
+          "description": "Zero-based chunk sequence index."
+        },
+        "data": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 650000,
+          "description": "Base64-encoded slice of the media binary."
+        },
+        "isPublic": {
+          "type": "boolean",
+          "description": "Whether publicly readable."
+        },
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "UID of admin who uploaded this chunk."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation server timestamp."
+        }
+      },
+      "required": ["assetId", "index", "data", "isPublic", "ownerId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/site_config/{configId}": {
+      "schema": { "$ref": "#/entities/SiteConfig" },
+      "description": "Single public site configuration document (main)."
+    },
+    "/tracks/{trackId}": {
+      "schema": { "$ref": "#/entities/Track" },
+      "description": "Managed playlist tracks including MP3 metadata."
+    },
+    "/tracks/{trackId}/chunks/{chunkId}": {
+      "schema": { "$ref": "#/entities/TrackChunk" },
+      "description": "Base64 chunks storing uploaded MP3 audio data safely under 1MB per document."
+    },
+    "/media_assets/{assetId}": {
+      "schema": { "$ref": "#/entities/MediaAsset" },
+      "description": "Uploaded binary media metadata such as the ambient background video."
+    },
+    "/media_assets/{assetId}/chunks/{chunkId}": {
+      "schema": { "$ref": "#/entities/MediaChunk" },
+      "description": "Base64 chunks storing uploaded background video safely under 1MB per document."
+    },
+    "/gallery/{itemId}": {
+      "schema": { "$ref": "#/entities/GalleryItem" },
+      "description": "Gallery images displayed in OTROS PLANOS."
+    },
+    "/collaborations/{collabId}": {
+      "schema": { "$ref": "#/entities/Collaboration" },
+      "description": "Artist collaborations displayed in ALGUNAS COLABS."
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/AdminRecord" },
+      "description": "Admin role documents checked by Firestore rules."
+    }
+  }
+}
