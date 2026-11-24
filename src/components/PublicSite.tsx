@@ -1,13 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, MotionConfig, useScroll, useSpring, useTransform } from 'motion/react';
-import {
-  fetchBackgroundVideoBlobUrl,
-  fetchPublicCollaborations,
-  fetchPublicGallery,
-  fetchPublicTracks,
-  fetchSiteConfig,
-  fetchTrackAudioUrl,
-} from '../services/cms';
+import { fetchPublicSiteBundle } from '../services/cms';
 import {
   Collaboration,
   DEFAULT_SITE_CONFIG,
@@ -15,7 +8,7 @@ import {
   SiteConfig,
   Track,
 } from '../types';
-import { getYoutubeId, safeExternalLink } from '../utils/media';
+import { getYoutubeId, resolveMediaUrl, safeExternalLink } from '../utils/media';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -47,11 +40,9 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [portraitFailed, setPortraitFailed] = useState(false);
   const [bgImgFailed, setBgImgFailed] = useState(false);
-  const [uploadedBgVideoUrl, setUploadedBgVideoUrl] = useState<string | null>(null);
   const [showAllCollabs, setShowAllCollabs] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const resolvedAudioUrlsRef = useRef<Map<string, string>>(new Map());
   const tracksRef = useRef<Track[]>([]);
   const currentIndexRef = useRef<number>(-1);
   const musicEnabledRef = useRef<boolean>(false);
@@ -91,91 +82,45 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
     }
   }, [config.artistName]);
 
-  // Cleanup blob object URLs on unmount
-  useEffect(() => {
-    const cache = resolvedAudioUrlsRef.current;
-    return () => {
-      cache.forEach((url) => {
-        if (url.startsWith('blob:')) {
-          URL.revokeObjectURL(url);
-        }
-      });
-      cache.clear();
-    };
-  }, []);
-
-  // Load site data, uploaded background video, and preload the first audio track
+  // Load lightweight text/link bundle (cached in browser for 30 min; media files load from GitHub Pages)
   useEffect(() => {
     let active = true;
-    let bgBlobUrl: string | null = null;
 
     async function loadAll() {
-      const [cfgRes, tracksRes, galleryRes, collabsRes, bgVideoRes] = await Promise.allSettled([
-        fetchSiteConfig(),
-        fetchPublicTracks(),
-        fetchPublicGallery(),
-        fetchPublicCollaborations(),
-        fetchBackgroundVideoBlobUrl(false),
-      ]);
+      try {
+        const forceRefresh = new URLSearchParams(window.location.search).has('refresh');
+        const bundle = await fetchPublicSiteBundle(forceRefresh);
+        if (!active) return;
 
-      if (!active) return;
-
-      if (bgVideoRes.status === 'fulfilled' && bgVideoRes.value) {
-        bgBlobUrl = bgVideoRes.value;
-        setUploadedBgVideoUrl(bgVideoRes.value);
-      }
-
-      if (cfgRes.status === 'fulfilled') {
-        setConfig(cfgRes.value);
+        setConfig(bundle.config);
         setPortraitFailed(false);
         setBgImgFailed(false);
-      }
+        setGallery(bundle.gallery);
+        setCollaborations(bundle.collaborations);
+        setTracks(bundle.tracks);
+        tracksRef.current = bundle.tracks;
 
-      if (galleryRes.status === 'fulfilled') {
-        setGallery(galleryRes.value);
-      }
-
-      if (collabsRes.status === 'fulfilled') {
-        setCollaborations(collabsRes.value);
-      }
-
-      if (tracksRes.status === 'fulfilled') {
-        const loadedTracks = tracksRes.value;
-        setTracks(loadedTracks);
-        tracksRef.current = loadedTracks;
-
-        if (!loadedTracks.length) {
+        if (!bundle.tracks.length) {
           setStatusTitle('Todavía no hay canciones cargadas');
-          setStatusArtist(cfgRes.status === 'fulfilled' ? cfgRes.value.artistName : 'SMOKK');
+          setStatusArtist(bundle.config.artistName || 'SMOKK');
         } else {
-          // Preload first track so audio.play() can run synchronously inside user click gesture
-          try {
-            const firstTrack = loadedTracks[0];
-            const firstUrl = await fetchTrackAudioUrl(firstTrack, false);
-            if (!active) return;
-            resolvedAudioUrlsRef.current.set(firstTrack.id, firstUrl);
-            if (audioRef.current) {
-              audioRef.current.src = firstUrl;
-              audioRef.current.load();
-            }
-          } catch (err) {
-            console.error('Error preloading first track:', err);
+          const firstUrl = resolveMediaUrl(bundle.tracks[0].audioUrl);
+          if (audioRef.current && firstUrl) {
+            audioRef.current.src = firstUrl;
+            audioRef.current.load();
           }
         }
-      }
-
-      if (active) {
-        setAudioReady(true);
+      } finally {
+        if (active) {
+          setAudioReady(true);
+        }
       }
     }
 
-    loadAll();
+    void loadAll();
 
     return () => {
       active = false;
-      if (bgBlobUrl && bgBlobUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(bgBlobUrl);
-      }
     };
   }, []);
 
@@ -198,7 +143,7 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
   }, []);
 
   const playTrackByIndex = useCallback(
-    async (index: number) => {
+    (index: number) => {
       const list = tracksRef.current;
       const audio = audioRef.current;
       if (!list.length || !audio) return;
@@ -216,27 +161,24 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
       setStatusArtist(artist);
       setBottomStatus(label);
 
-      try {
-        let url = resolvedAudioUrlsRef.current.get(track.id);
-        if (!url) {
-          url = await fetchTrackAudioUrl(track, false);
-          resolvedAudioUrlsRef.current.set(track.id, url);
-        }
-        if (audio.src !== url) {
-          audio.src = url;
-        }
-        const playPromise = audio.play();
-        if (playPromise && typeof playPromise.catch === 'function') {
-          playPromise.catch(() => {
-            setStatusTitle('No se pudo iniciar el audio');
-            setStatusArtist('Revisá el archivo de la canción en el panel admin');
-            setIsPlaying(false);
-          });
-        }
-      } catch {
+      const url = resolveMediaUrl(track.audioUrl);
+      if (!url) {
         setStatusTitle('No se pudo reproducir la canción');
         setStatusArtist('Revisá el archivo cargado en el panel de administración');
         setIsPlaying(false);
+        return;
+      }
+
+      if (audio.src !== new URL(url, window.location.href).href) {
+        audio.src = url;
+      }
+      const playPromise = audio.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {
+          setStatusTitle('No se pudo iniciar el audio');
+          setStatusArtist('Revisá el archivo de la canción en el panel admin');
+          setIsPlaying(false);
+        });
       }
     },
     [config.artistName]
@@ -247,31 +189,8 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
     musicEnabledRef.current = withMusic;
     setIntroLeaving(true);
 
-    // Start audio synchronously inside the click gesture when ready
     if (withMusic && tracksRef.current.length > 0) {
-      const firstTrack = tracksRef.current[0];
-      const preloadedUrl = resolvedAudioUrlsRef.current.get(firstTrack.id);
-      const audio = audioRef.current;
-      if (audio && preloadedUrl) {
-        currentIndexRef.current = 0;
-        setCurrentTrackIndex(0);
-        setStatusTitle(firstTrack.title);
-        setStatusArtist(firstTrack.artist);
-        setBottomStatus(`${firstTrack.title} — ${firstTrack.artist}`);
-        if (audio.src !== preloadedUrl) {
-          audio.src = preloadedUrl;
-        }
-        const p = audio.play();
-        if (p && typeof p.catch === 'function') {
-          p.catch(() => {
-            setStatusTitle('No se pudo iniciar el audio');
-            setStatusArtist('Revisá el archivo de la canción');
-            setIsPlaying(false);
-          });
-        }
-      } else {
-        void playTrackByIndex(0);
-      }
+      playTrackByIndex(0);
     } else if (withMusic && tracksRef.current.length === 0) {
       setStatusTitle('Todavía no hay canciones cargadas');
       setStatusArtist('Subí tu MP3 desde el panel /admin');
@@ -345,10 +264,11 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
   const showTicker = entered && musicEnabled && isPlaying;
   const currentYear = new Date().getFullYear();
 
-  const resolvedPortrait =
-    !config.portraitImage || config.portraitImage === '/material/imagenes/personaje.png'
-      ? `${import.meta.env.BASE_URL}material/imagenes/personaje.png`
-      : config.portraitImage;
+  const resolvedPortrait = resolveMediaUrl(
+    config.portraitImage || '/material/imagenes/personaje.png'
+  );
+  const resolvedBackgroundImage = resolveMediaUrl(config.backgroundImage);
+  const resolvedBackgroundVideo = resolveMediaUrl(config.backgroundVideoUrl);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -396,10 +316,10 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
 
       <div id="site" className="site" hidden={!entered}>
         <div className="video-backdrop" aria-hidden="true">
-          {uploadedBgVideoUrl || config.backgroundVideoUrl ? (
+          {resolvedBackgroundVideo ? (
             <video
               id="backgroundVideo"
-              src={uploadedBgVideoUrl || config.backgroundVideoUrl}
+              src={resolvedBackgroundVideo}
               autoPlay
               muted
               playsInline
@@ -448,10 +368,10 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
                 y: portraitY,
               }}
             >
-              {config.backgroundImage && !bgImgFailed ? (
+              {resolvedBackgroundImage && !bgImgFailed ? (
                 <img
                   className="hero-art-background"
-                  src={config.backgroundImage}
+                  src={resolvedBackgroundImage}
                   alt=""
                   onError={() => setBgImgFailed(true)}
                 />
@@ -673,7 +593,7 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
                     }}
                   >
                     <img
-                      src={item.imageUrl}
+                      src={resolveMediaUrl(item.imageUrl)}
                       alt={item.title || `Imagen de ${config.artistName}`}
                       loading="lazy"
                     />
@@ -737,10 +657,11 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
                             const primaryHref = yt || sp;
                             const primaryPlatform = yt ? 'YouTube' : sp ? 'Spotify' : '';
                             const ytId = getYoutubeId(item.youtubeUrl);
-                            const artistImg =
+                            const artistImg = resolveMediaUrl(
                               item.artistPhotoUrl ||
-                              item.imageUrl ||
-                              (ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : '');
+                                item.imageUrl ||
+                                (ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : '')
+                            );
                             const displayName = item.artistName || item.title;
                             const artistNote = item.artistDescription || item.description;
                             const enterX = idx % 3 === 0 ? -36 : idx % 3 === 2 ? 36 : 0;
@@ -842,10 +763,12 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
                             const yt = safeExternalLink(item.youtubeUrl);
                             const sp = safeExternalLink(item.spotifyUrl);
                             const ytId = getYoutubeId(item.youtubeUrl);
-                            const resolvedImage =
+                            const resolvedImage = resolveMediaUrl(
                               item.imageUrl ||
-                              (ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : '');
-                            const hasMedia = Boolean(item.videoUrl || resolvedImage);
+                                (ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : '')
+                            );
+                            const resolvedCollabVideo = resolveMediaUrl(item.videoUrl);
+                            const hasMedia = Boolean(resolvedCollabVideo || resolvedImage);
                             const fromLeft = idx % 2 === 0;
 
                             return (
@@ -863,10 +786,10 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
                               >
                                 {hasMedia && (
                                   <div className="collab-media-box">
-                                    {item.videoUrl ? (
+                                    {resolvedCollabVideo ? (
                                       <video
                                         className="collab-media"
-                                        src={item.videoUrl}
+                                        src={resolvedCollabVideo}
                                         muted
                                         autoPlay
                                         loop
