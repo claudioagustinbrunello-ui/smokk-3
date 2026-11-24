@@ -4,6 +4,10 @@ import { doc, getDocFromServer, getFirestore } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
 export const ADMIN_BOOTSTRAP_EMAIL = 'claudioagustinbrunello@gmail.com';
+export const ADMIN_BOOTSTRAP_EMAILS = [
+  'claudioagustinbrunello@gmail.com',
+  'smokkoficial@gmail.com',
+] as const;
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
