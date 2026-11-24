@@ -1,1541 +1,2461 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
-@import "tailwindcss";
-
-:root {
-  --black: #080809;
-  --panel: #111113;
-  --red: #c10e2e;
-  --red2: #f02b49;
-  --white: #f5f3f3;
-  --muted: #aaa6aa;
-  --line: rgba(255, 255, 255, 0.14);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: 76px;
-}
-
-body {
-  margin: 0;
-  background: var(--black);
-  color: var(--white);
-  font-family: Inter, Arial, sans-serif;
-  line-height: 1.55;
-}
-
-body.locked {
-  overflow: hidden;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-button {
-  font: inherit;
-  cursor: pointer;
-}
-
-button:focus-visible,
-a:focus-visible {
-  outline: 2px solid var(--red2);
-  outline-offset: 4px;
-}
-
-/* =========================================================================
-   RESCUED ORIGINAL SMOKK DESIGN (smokk.netlify.app)
-   ========================================================================= */
-.site {
-  position: relative;
-  overflow: clip;
-}
-
-.video-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  background: #09090a;
-  overflow: hidden;
-}
-
-.video-backdrop video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.42;
-  filter: saturate(0.78);
-}
-
-.video-shade {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.47), rgba(0, 0, 0, 0.21) 45%, #080809 100%);
-}
-
-.red-haze {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 75% 30%, rgba(172, 0, 35, 0.22), transparent 48%);
-  mix-blend-mode: screen;
-  pointer-events: none;
-}
-
-.intro {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: #070708;
-  overflow: hidden;
-  text-align: center;
-  transition: opacity 0.55s ease;
-}
-
-.intro.leaving {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.intro[hidden] {
-  display: none;
-}
-
-.intro-glow {
-  position: absolute;
-  width: min(80vw, 700px);
-  height: min(80vw, 700px);
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(184, 0, 36, 0.2), transparent 68%);
-  animation: pulse 4s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.intro-kicker,
-.intro-caption,
-.eyebrow {
-  font-size: 0.68rem;
-  letter-spacing: 0.24em;
-  font-weight: 700;
-  color: #c5c0c3;
-}
-
-.intro-name {
-  font-family: 'Barlow Condensed', Impact, sans-serif;
-  font-size: clamp(5rem, 20vw, 12rem);
-  line-height: 0.8;
-  letter-spacing: -0.055em;
-  margin: 28px 0;
-  font-weight: 900;
-  text-shadow: 0 0 50px #bd092d35;
-  animation: revealName 1.3s cubic-bezier(0.2, 0.75, 0.2, 1) both;
-}
-
-.intro-name span,
-.wordmark span,
-.hero-title span,
-.bio-copy h2 span,
-.section-heading h2 span,
-.always-video h2 span,
-.platform-access-heading h2 span {
-  color: var(--red2);
-}
-
-.intro-caption {
-  margin: 0 0 38px;
-}
-
-.intro-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-  z-index: 1;
-}
-
-.smokk-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 48px;
-  padding: 13px 20px;
-  border: 1px solid transparent;
-  font-size: 0.72rem;
-  letter-spacing: 0.12em;
-  font-weight: 800;
-  transition: transform 0.25s, background 0.25s, border-color 0.25s, opacity 0.25s;
-}
-
-.smokk-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-}
-
-.smokk-btn:disabled {
-  opacity: 0.65;
-  cursor: wait;
-}
-
-.button-red {
-  background: var(--red);
-  color: #fff;
-}
-
-.button-red:hover:not(:disabled) {
-  background: #e0163a;
-}
-
-.button-outline {
-  background: transparent;
-  border-color: #5b5558;
-  color: #fff;
-}
-
-.button-outline:hover:not(:disabled) {
-  border-color: #9e969a;
-}
-
-.topbar {
-  height: 76px;
-  padding: 0 clamp(18px, 5vw, 76px);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--line);
-  background: rgba(5, 5, 6, 0.56);
-  backdrop-filter: blur(16px);
-  position: sticky;
-  top: 0;
-  z-index: 20;
-}
-
-.wordmark {
-  font-family: 'Barlow Condensed', Impact, sans-serif;
-  font-weight: 900;
-  letter-spacing: -0.04em;
-  font-size: 1.8rem;
-}
-
-.topbar nav {
-  display: flex;
-  gap: clamp(16px, 3vw, 42px);
-}
-
-.topbar nav a,
-.sound-toggle {
-  font-size: 0.66rem;
-  letter-spacing: 0.14em;
-  font-weight: 700;
-}
-
-.topbar nav a {
-  color: #d3ced0;
-}
-
-.topbar nav a:hover,
-.social-links a:hover,
-.footer-social a:hover {
-  color: var(--red2);
-}
-
-.hero {
-  min-height: min(850px, calc(100svh - 76px));
-  min-height: max(650px, calc(100svh - 76px));
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: clamp(28px, 8vw, 120px);
-  isolation: isolate;
-}
-
-.hero:before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, #080809 0%, rgba(8, 8, 9, 0.9) 38%, rgba(8, 8, 9, 0.12) 100%);
-  z-index: -1;
-}
-
-.hero-copy {
-  position: relative;
-  z-index: 2;
-  max-width: 740px;
-}
-
-.hero-title {
-  font-family: 'Barlow Condensed', Impact, sans-serif;
-  font-size: clamp(6rem, 18vw, 15rem);
-  letter-spacing: -0.065em;
-  line-height: 0.76;
-  margin: 26px 0 24px;
-  font-weight: 900;
-}
-
-.text-link {
-  display: inline-flex;
-  gap: 20px;
-  align-items: center;
-  margin-top: 35px;
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  border-bottom: 1px solid var(--red);
-  padding-bottom: 12px;
-}
-
-.text-link span {
-  color: var(--red2);
-  font-size: 1.2rem;
-}
-
-.hero-art {
-  position: absolute;
-  right: 8%;
-  bottom: 0;
-  top: 0;
-  width: 50%;
-  z-index: 0;
-  pointer-events: none;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.hero-art-background {
-  position: absolute;
-  inset: 7% 0 0;
-  width: 100%;
-  height: 93%;
-  object-fit: cover;
-  object-position: center;
-  opacity: 0.5;
-  mix-blend-mode: screen;
-  mask-image: linear-gradient(0deg, transparent 0%, #000 25%, #000 75%, transparent 100%);
-}
-
-.hero-art-person {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center bottom;
-  filter: drop-shadow(0 0 60px #b3002540);
-}
-
-.hero-art:after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(0deg, #080809 0%, transparent 30%),
-    linear-gradient(90deg, #080809 0%, transparent 40%);
-}
-
-.hero-bottom {
-  position: absolute;
-  bottom: 24px;
-  left: clamp(28px, 8vw, 120px);
-  right: clamp(28px, 8vw, 120px);
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.6rem;
-  letter-spacing: 0.18em;
-  color: #aaa;
-}
-
-.scene {
-  min-height: 85svh;
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.cinema {
-  padding: clamp(50px, 12vw, 170px);
-  background: linear-gradient(115deg, rgba(7, 7, 8, 0.98), rgba(12, 7, 9, 0.78)),
-    radial-gradient(ellipse at 75% 55%, #7d071d 0%, transparent 40%);
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-}
-
-.cinema-content {
-  max-width: 900px;
-}
-
-.cinema h2,
-.section-heading h2,
-.platform-access-heading h2,
-.always-video h2 {
-  font-family: 'Barlow Condensed', Impact, sans-serif;
-  font-size: clamp(3.2rem, 9vw, 8rem);
-  line-height: 0.92;
-  letter-spacing: -0.035em;
-  margin: 22px 0;
-  font-weight: 800;
-}
-
-.cinema h2 span {
-  color: #a7a1a4;
-}
-
-.cinema-note {
-  color: #c5bfc2;
-  max-width: 400px;
-}
-
-.section-index {
-  position: absolute;
-  bottom: 28px;
-  right: clamp(24px, 6vw, 80px);
-  font-size: 0.65rem;
-  letter-spacing: 0.18em;
-  color: #aaa;
-}
-
-.section {
-  padding: clamp(70px, 10vw, 140px) clamp(22px, 9vw, 130px);
-  background: var(--black);
-}
-
-.section-heading,
-.platform-access-heading {
-  max-width: 720px;
-  margin-bottom: 42px;
-}
-
-.section-heading h2,
-.platform-access-heading h2,
-.always-video h2 {
-  font-size: clamp(3rem, 7vw, 6rem);
-}
-
-.section-heading > p:not(.eyebrow),
-.platform-access-heading > p:not(.eyebrow),
-.always-video p:not(.eyebrow) {
-  color: var(--muted);
-  max-width: 580px;
-}
-
-.empty-state {
-  color: var(--muted);
-  border: 1px dashed #4a353a;
-  padding: 24px;
-  max-width: 700px;
-}
-
-.bio-section {
-  display: grid;
-  grid-template-columns: 0.35fr 1fr;
-  gap: 30px;
-  background: #0e0e10;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-}
-
-.bio-number {
-  font-family: 'Barlow Condensed', Impact, sans-serif;
-  font-size: clamp(5rem, 13vw, 12rem);
-  line-height: 0.8;
-  color: #3d101a;
-  font-weight: 900;
-}
-
-.bio-copy {
-  max-width: 820px;
-}
-
-.bio-copy h2 {
-  font-family: 'Barlow Condensed', Impact, sans-serif;
-  font-size: clamp(4rem, 9vw, 8rem);
-  line-height: 0.85;
-  margin: 15px 0 30px;
-  font-weight: 900;
-}
-
-.bio-copy p {
-  color: #c6c1c4;
-  margin-bottom: 16px;
-}
-
-.bio-copy .bio-lead {
-  font-size: clamp(1.15rem, 2vw, 1.55rem);
-  color: #fff;
-  line-height: 1.5;
-}
-
-.credits-line {
-  font-size: 0.85rem;
-  border-left: 2px solid var(--red);
-  padding-left: 14px;
-  margin: 28px 0;
-}
-
-.social-links,
-.footer-social {
-  display: flex;
-  gap: 22px;
-  flex-wrap: wrap;
-  margin-top: 30px;
-}
-
-.release-section {
-  background: #080809;
-}
-
-.youtube-frame {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16/9;
-  background: #151517;
-  border: 1px solid var(--line);
-  overflow: hidden;
-}
-
-.youtube-frame iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-.release-caption {
-  font-size: 0.72rem;
-  letter-spacing: 0.15em;
-  color: #d4cdd0;
-  margin-top: 18px;
-}
-
-.always-video {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 36px;
-  background: linear-gradient(100deg, #101012, #18070b);
-  border-top: 1px solid var(--line);
-}
-
-.always-video h2 {
-  margin: 16px 0;
-}
-
-.footer {
-  padding: 45px clamp(22px, 9vw, 130px) calc(120px + var(--safe-bottom));
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  align-items: center;
-  background: #050506;
-  border-top: 1px solid var(--line);
-  color: #b9b3b6;
-  font-size: 0.8rem;
-}
-
-.footer .wordmark {
-  color: white;
-}
-
-.footer-social {
-  margin: 0;
-  justify-content: flex-end;
-}
-
-.footer small {
-  grid-column: 1/-1;
-  color: #777;
-  letter-spacing: 0.04em;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.admin-subtle-link {
-  color: #5f5b5d;
-  font-size: 0.68rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  transition: color 0.2s ease;
-}
-
-.admin-subtle-link:hover {
-  color: var(--red2);
-}
-
-.bottom-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 25;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px clamp(16px, 4vw, 36px) calc(10px + var(--safe-bottom));
-  background: rgba(7, 7, 8, 0.91);
-  border-top: 1px solid rgba(255, 255, 255, 0.13);
-  backdrop-filter: blur(18px);
-}
-
-.bottom-mark {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  background: var(--red);
-  font-family: 'Barlow Condensed', Impact, sans-serif;
-  font-size: 1.45rem;
-  font-weight: 900;
-  color: #fff;
-}
-
-.bottom-copy {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.25;
-  flex: 1;
-  min-width: 0;
-}
-
-.bottom-copy strong {
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-}
-
-.bottom-copy small {
-  font-size: 0.65rem;
-  color: #aaa;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.install-button,
-.bottom-bar > a {
-  background: var(--red);
-  border: 0;
-  color: #fff;
-  padding: 11px 16px;
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-}
-
-.bottom-bar > a {
-  background: transparent;
-  border: 1px solid #625158;
-}
-
-/* Current song ticker */
-.now-playing-ticker {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 62px;
-  z-index: 24;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 9px clamp(16px, 4vw, 36px);
-  background: rgba(12, 12, 14, 0.94);
-  border-top: 1px solid rgba(240, 43, 73, 0.45);
-  backdrop-filter: blur(14px);
-  overflow: hidden;
-}
-
-.now-playing-ticker[hidden] {
-  display: none;
-}
-
-.ticker-label {
-  flex: none;
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  color: #f02b49;
-}
-
-.ticker-window {
-  min-width: 0;
-  overflow: hidden;
-  flex: 1;
-  mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
-}
-
-.ticker-track {
-  display: flex;
-  width: max-content;
-  gap: 70px;
-  animation: tickerScroll 19s linear infinite;
-}
-
-.ticker-track span {
-  white-space: nowrap;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-}
-
-.ticker-equalizer {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  height: 19px;
-  flex: none;
-}
-
-.ticker-equalizer i {
-  display: block;
-  width: 3px;
-  height: 7px;
-  background: #f02b49;
-  border-radius: 2px;
-  animation: eq 0.7s ease-in-out infinite alternate;
-}
-
-.ticker-equalizer i:nth-child(2) {
-  height: 15px;
-  animation-delay: 0.15s;
-}
-
-.ticker-equalizer i:nth-child(3) {
-  height: 10px;
-  animation-delay: 0.3s;
-}
-
-.ticker-equalizer i:nth-child(4) {
-  height: 17px;
-  animation-delay: 0.1s;
-}
-
-.now-playing-card {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  max-width: 920px;
-  padding: 24px;
-  border: 1px solid var(--line);
-  background: linear-gradient(110deg, rgba(193, 14, 46, 0.13), rgba(16, 16, 18, 0.95));
-}
-
-.now-playing-card .eyebrow {
-  margin: 0 0 5px;
-  font-size: 0.58rem;
-}
-
-.now-playing-card strong {
-  display: block;
-  font-size: 1rem;
-}
-
-.now-playing-card p:last-child {
-  margin: 3px 0 0;
-  color: var(--muted);
-  font-size: 0.8rem;
-}
-
-.now-playing-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--red2);
-  box-shadow: 0 0 20px #f02b4970;
-  flex: none;
-}
-
-.gallery-section {
-  background: #0b0b0d;
-  border-top: 1px solid var(--line);
-}
-
-.gallery-track {
-  display: flex;
-  gap: 18px;
-  overflow-x: auto;
-  padding: 4px 0 18px;
-  scroll-snap-type: x mandatory;
-  scrollbar-color: #7c1528 #19191b;
-  scrollbar-width: thin;
-}
-
-.gallery-card {
-  position: relative;
-  flex: 0 0 min(72vw, 390px);
-  margin: 0;
-  scroll-snap-align: start;
-  overflow: hidden;
-  background: #111;
-  border: 1px solid var(--line);
-}
-
-.gallery-card img {
-  display: block;
-  width: 100%;
-  height: clamp(260px, 42vw, 440px);
-  object-fit: cover;
-  transition: transform 0.5s ease;
-}
-
-.gallery-card:hover img {
-  transform: scale(1.035);
-}
-
-.gallery-card figcaption {
-  padding: 13px 15px;
-  color: #d2cdd0;
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-}
-
-.collabs-section {
-  background: #080809;
-  border-top: 1px solid var(--line);
-}
-
-.collabs-showcase {
-  display: flex;
-  flex-direction: column;
-  gap: 36px;
-}
-
-.collab-sublabel {
-  margin: 0 0 16px;
-  font-size: 0.64rem;
-  font-weight: 800;
-  letter-spacing: 0.22em;
-  color: var(--red2);
-}
-
-.featured-artists-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 18px;
-}
-
-.featured-artist-card {
-  display: flex;
-  flex-direction: column;
-  background: #111113;
-  border: 1px solid rgba(240, 43, 73, 0.28);
-  overflow: hidden;
-  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-.featured-artist-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(240, 43, 73, 0.72);
-  box-shadow: 0 18px 40px rgba(193, 14, 46, 0.16);
-}
-
-.featured-artist-main {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.featured-artist-photo {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  background: #18181b;
-  overflow: hidden;
-}
-
-.featured-artist-photo img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.featured-artist-card:hover .featured-artist-photo img {
-  transform: scale(1.05);
-}
-
-.featured-artist-photo::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent 52%, rgba(8, 8, 9, 0.86) 100%);
-  pointer-events: none;
-}
-
-.featured-artist-fallback {
-  width: 100%;
-  height: 100%;
-  display: grid;
-  place-items: center;
-  font-family: 'Barlow Condensed', Impact, sans-serif;
-  font-size: 4.5rem;
-  font-weight: 900;
-  color: rgba(240, 43, 73, 0.65);
-  background: radial-gradient(circle at 50% 35%, rgba(193, 14, 46, 0.24), #111113 75%);
-}
-
-.featured-artist-badge {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
-  z-index: 2;
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
-}
-
-.featured-artist-badge.badge-youtube {
-  background: #c90024;
-}
-
-.featured-artist-badge.badge-spotify {
-  background: #075b3d;
-}
-
-.featured-artist-info {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  flex: 1;
-}
-
-.featured-artist-info h3 {
-  margin: 0;
-  font-family: 'Barlow Condensed', Impact, sans-serif;
-  font-size: clamp(1.55rem, 2.5vw, 2rem);
-  font-weight: 900;
-  letter-spacing: -0.01em;
-  line-height: 1;
-  text-transform: uppercase;
-  color: #fff;
-}
-
-.featured-artist-song {
-  margin: 2px 0 0;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #e4dfe2;
-  line-height: 1.3;
-}
-
-.featured-artist-desc {
-  margin: 2px 0 0;
-  font-size: 0.76rem;
-  color: var(--muted);
-  line-height: 1.4;
-}
-
-.featured-artist-cta {
-  margin-top: auto;
-  padding-top: 10px;
-  font-size: 0.64rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--red2);
-}
-
-.featured-artist-alt-link {
-  display: block;
-  padding: 9px 16px;
-  border-top: 1px solid var(--line);
-  background: rgba(7, 91, 61, 0.16);
-  font-size: 0.64rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #b8f1d7;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.featured-artist-alt-link:hover {
-  background: rgba(7, 91, 61, 0.35);
-  color: #fff;
-}
-
-.collab-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.collab-grid-compact {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.collab-card {
-  min-width: 0;
-  padding: 13px;
-  background: #111113;
-  border: 1px solid var(--line);
-  display: grid;
-  grid-template-columns: 108px minmax(0, 1fr);
-  gap: 14px;
-  align-items: center;
-}
-
-.collab-card.collab-card-text-only {
-  grid-template-columns: 1fr;
-}
-
-.collab-media-box {
-  width: 100%;
-  aspect-ratio: 1/1;
-  overflow: hidden;
-  background: #1a1a1d;
-  border: 1px solid var(--line);
-}
-
-.collab-media {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  background: #1a1a1d;
-}
-
-.collab-body {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  height: 100%;
-  justify-content: center;
-}
-
-.collab-card h3 {
-  margin: 0;
-  font-family: 'Barlow Condensed', Impact, sans-serif;
-  font-size: clamp(1.2rem, 1.8vw, 1.5rem);
-  font-weight: 800;
-  letter-spacing: 0.01em;
-  line-height: 1.08;
-  color: #fff;
-}
-
-.collab-description {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.78rem;
-  line-height: 1.4;
-}
-
-.collab-links {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 2px;
-}
-
-.collab-toggle-wrap {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-}
-
-.collab-toggle-btn {
-  min-width: 240px;
-}
-
-.platform-buttons {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  align-items: stretch;
-  margin-top: 26px;
-  width: 100%;
-}
-
-.platform-button {
-  position: relative;
-  isolation: isolate;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-width: 0;
-  min-height: 68px;
-  padding: 16px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 4px;
-  color: #fff;
-  font-size: 0.76rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  overflow: hidden;
-  transition: transform 0.22s ease, filter 0.22s ease, border-color 0.22s ease;
-  animation: socialPulse 3.2s ease-in-out infinite;
-}
-
-.platform-button::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  opacity: 0.94;
-  transition: opacity 0.22s ease;
-}
-
-.platform-youtube::before {
-  background: #c90024;
-}
-
-.platform-spotify::before {
-  background: #075b3d;
-}
-
-.platform-instagram::before {
-  background: #a92f68;
-}
-
-.platform-symbol {
-  font-size: 1rem;
-  line-height: 1;
-  flex: none;
-}
-
-.platform-spotify-symbol,
-.platform-instagram-symbol {
-  font-size: 1.25rem;
-}
-
-.platform-arrow {
-  margin-left: auto;
-  opacity: 0.78;
-  flex: none;
-}
-
-.platform-button:hover {
-  transform: translateY(-3px);
-  filter: brightness(1.14);
-  border-color: rgba(255, 255, 255, 0.42);
-}
-
-.platform-button:hover::before {
-  opacity: 1;
-}
-
-.collab-platform-button {
-  min-height: 42px;
-  padding: 10px 13px;
-  justify-content: center;
-  font-size: 0.7rem;
-  flex: 1;
-}
-
-.reveal {
-  animation: rise 0.8s both;
-}
-
-.hero .reveal:nth-child(2) {
-  animation-delay: 0.12s;
-}
-
-.hero .reveal:nth-child(3) {
-  animation-delay: 0.22s;
-}
-
-.hero .reveal:nth-child(4) {
-  animation-delay: 0.32s;
-}
-
-.scroll-reveal {
-  opacity: 0;
-  transform: translate3d(0, 30px, 0);
-  filter: blur(3px);
-  transition: opacity 0.72s ease, transform 0.82s cubic-bezier(0.2, 0.7, 0.2, 1), filter 0.72s ease;
-  will-change: opacity, transform;
-}
-
-.scroll-reveal-left {
-  transform: translate3d(-30px, 12px, 0);
-}
-
-.scroll-reveal-scale {
-  transform: translate3d(0, 18px, 0) scale(0.97);
-}
-
-.scroll-reveal.is-visible {
-  opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
-  filter: blur(0);
-}
-
-@keyframes revealName {
-  from {
-    opacity: 0;
-    transform: translateY(22px);
-    filter: blur(12px);
-    letter-spacing: 0.12em;
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-    letter-spacing: -0.055em;
-  }
-}
-
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(0.9);
-    opacity: 0.6;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 1;
-  }
-}
-
-@keyframes tickerScroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-@keyframes eq {
-  from {
-    transform: scaleY(0.45);
-  }
-  to {
-    transform: scaleY(1);
-  }
-}
-
-@keyframes socialPulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0), 0 0 12px rgba(255, 255, 255, 0.035);
-  }
-  50% {
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 0 19px rgba(255, 255, 255, 0.12);
-  }
-}
-
-@media (min-width: 1000px) {
-  .hero {
-    min-height: calc(100svh - 76px);
-  }
-  .hero-art {
-    right: 4%;
-    width: 52%;
-  }
-}
-
-@media (max-width: 999px) and (min-width: 701px) {
-  .hero.scene {
-    min-height: clamp(460px, 62svh, 660px);
-  }
-}
-
-@media (max-width: 1120px) {
-  .collab-grid-compact {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 960px) {
-  .collab-grid,
-  .collab-grid-compact {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-}
-
-@media (max-width: 800px) {
-  .collab-card {
-    grid-template-columns: 104px minmax(0, 1fr);
-    gap: 12px;
-    padding: 12px;
-  }
-}
-
-@media (max-width: 700px) {
-  .topbar {
-    height: 64px;
-    padding: 0 18px;
-  }
-  .topbar nav {
-    gap: 13px;
-  }
-  .topbar nav a {
-    font-size: 0.55rem;
-    letter-spacing: 0.08em;
-  }
-  .hero.scene {
-    min-height: 0;
-    padding: 16px 14px 48px;
-    display: grid;
-    grid-template-columns: minmax(0, 0.94fr) minmax(0, 1.16fr);
-    align-items: center;
-    gap: 2px;
-  }
-  .hero:before {
-    background: linear-gradient(90deg, #080809 0%, rgba(8, 8, 9, 0.88) 44%, rgba(8, 8, 9, 0.22) 100%);
-  }
-  .hero-copy {
-    width: 100%;
-    max-width: none;
-    margin-top: 0;
-    z-index: 3;
-  }
-  .hero-title {
-    font-size: clamp(3.15rem, 15.8vw, 5.4rem);
-    letter-spacing: -0.06em;
-    line-height: 0.82;
-    margin: 10px 0 12px;
-    overflow-wrap: normal;
-  }
-  .hero .eyebrow {
-    font-size: 0.52rem;
-    letter-spacing: 0.13em;
-    max-width: 100%;
-  }
-  .hero .text-link {
-    font-size: 0.56rem;
-    letter-spacing: 0.08em;
-    gap: 8px;
-    margin-top: 14px;
-    padding-bottom: 9px;
-    max-width: 100%;
-  }
-  .hero-art {
-    position: relative;
-    inset: auto;
-    right: auto;
-    top: auto;
-    bottom: auto;
-    width: 118%;
-    margin-left: -14%;
-    aspect-ratio: 3761 / 4092;
-    max-height: 390px;
-    opacity: 1;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    overflow: visible;
-  }
-  .hero-art-background {
-    inset: 0;
-    height: 100%;
-    opacity: 0.32;
-    mix-blend-mode: screen;
-  }
-  .hero-art-person {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: center bottom;
-  }
-  .hero-art:after {
-    background: linear-gradient(0deg, #080809 0%, transparent 24%),
-      linear-gradient(90deg, #080809 0%, rgba(8, 8, 9, 0.18) 20%, transparent 65%);
-  }
-  .hero-bottom {
-    left: 16px;
-    right: 16px;
-    bottom: 14px;
-    font-size: 0.52rem;
-  }
-  .platform-access.section {
-    padding-top: 38px;
-    padding-bottom: 58px;
-  }
-  .cinema {
-    min-height: 60svh;
-    padding: 56px 22px;
-  }
-  .section {
-    padding: 60px 20px;
-  }
-  .bio-section {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  .bio-number {
-    font-size: 4rem;
-  }
-  .always-video {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-  .always-video .smokk-btn {
-    width: 100%;
-  }
-  .footer {
-    grid-template-columns: 1fr;
-    padding: 35px 22px calc(120px + var(--safe-bottom));
-  }
-  .footer-social {
-    justify-content: flex-start;
-  }
-  .footer small {
-    grid-column: auto;
-  }
-  .intro-name {
-    font-size: clamp(5rem, 25vw, 8rem);
-  }
-  .intro-actions {
-    width: 100%;
-    max-width: 320px;
-    flex-direction: column;
-  }
-  .intro-actions .smokk-btn {
-    width: 100%;
-  }
-  .platform-buttons {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-  }
-  .platform-button {
-    min-height: 60px;
-    padding: 11px 5px;
-    gap: 5px;
-    font-size: clamp(0.48rem, 2.25vw, 0.64rem);
-    letter-spacing: 0;
-    border-radius: 4px;
-    white-space: nowrap;
-  }
-  .platform-symbol {
-    font-size: 0.85rem;
-  }
-  .platform-spotify-symbol,
-  .platform-instagram-symbol {
-    font-size: 1rem;
-  }
-  .platform-arrow {
-    display: none;
-  }
-}
-
-@media (max-width: 520px) {
-  .now-playing-ticker {
-    bottom: 59px;
-    padding: 8px 13px;
-    gap: 9px;
-  }
-  .ticker-label {
-    font-size: 0.52rem;
-  }
-  .ticker-track span {
-    font-size: 0.63rem;
-  }
-  .gallery-card {
-    flex-basis: 82vw;
-  }
-  .featured-artists-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
-  .featured-artist-info {
-    padding: 11px;
-  }
-  .featured-artist-info h3 {
-    font-size: 1.25rem;
-  }
-  .featured-artist-song {
-    font-size: 0.7rem;
-  }
-  .featured-artist-desc {
-    font-size: 0.68rem;
-  }
-  .featured-artist-cta {
-    font-size: 0.56rem;
-    letter-spacing: 0.08em;
-  }
-  .featured-artist-alt-link {
-    padding: 7px 11px;
-    font-size: 0.56rem;
-  }
-  .collab-grid,
-  .collab-grid-compact {
-    grid-template-columns: 1fr;
-  }
-  .collab-card {
-    grid-template-columns: 92px minmax(0, 1fr);
-    gap: 11px;
-    padding: 11px;
-    width: 100%;
-  }
-  .collab-toggle-btn {
-    width: 100%;
-  }
-  .collab-media-box {
-    aspect-ratio: 1/1;
-  }
-  .now-playing-card {
-    padding: 18px;
-  }
-}
-
-@media (max-width: 360px) {
-  .hero.scene {
-    grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.14fr);
-    padding: 14px 12px 46px;
-  }
-  .hero-title {
-    font-size: clamp(2.85rem, 15vw, 3.6rem);
-  }
-  .platform-buttons {
-    gap: 6px;
-  }
-  .platform-button {
-    padding-inline: 3px;
-    font-size: 0.48rem;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  .platform-button {
-    animation: none !important;
-  }
-  .scroll-reveal,
-  .scroll-reveal-left,
-  .scroll-reveal-scale {
-    opacity: 1 !important;
-    transform: none !important;
-    filter: none !important;
-    transition: none !important;
-  }
-}
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { onAuthStateChanged, signInWithPopup, signOut, User } from 'firebase/auth';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Film,
+  FolderGit2,
+  Image as ImageIcon,
+  LogOut,
+  Music,
+  Play,
+  Plus,
+  RefreshCw,
+  Save,
+  Settings,
+  ShieldAlert,
+  Square,
+  Star,
+  Trash2,
+  Upload,
+  Users,
+} from 'lucide-react';
+import { auth, googleProvider } from '../firebase';
+import {
+  addCollaboration,
+  addGalleryItem,
+  checkIsAdmin,
+  cleanupLegacyFirestoreBlobs,
+  createTrackWithUrl,
+  deleteCollaboration,
+  deleteGalleryItem,
+  deleteTrackWithChunks,
+  fetchAllCollaborationsAdmin,
+  fetchAllGalleryAdmin,
+  fetchAllTracksAdmin,
+  fetchSiteConfig,
+  replaceTrackAudioSource,
+  saveSiteConfig,
+  updateCollaboration,
+  updateGalleryItem,
+  updateTrackMeta,
+} from '../services/cms';
+import {
+  GitHubConfig,
+  isGitHubReady,
+  loadGitHubConfig,
+  saveGitHubConfig,
+  testGitHubConnection,
+  uploadFileToGitHub,
+} from '../services/github';
+import {
+  Collaboration,
+  DEFAULT_SITE_CONFIG,
+  GalleryItem,
+  SCHEMA_LIMITS,
+  SiteConfig,
+  Track,
+} from '../types';
+import {
+  formatBytes,
+  getYoutubeId,
+  isBase64DataUrl,
+  optimizeImageForGitHub,
+  resolveMediaUrl,
+} from '../utils/media';
+
+type AdminTab = 'music' | 'video' | 'gallery' | 'collabs' | 'general';
+
+interface AdminPanelProps {
+  onBackToSite: () => void;
+}
+
+export const AdminPanel: React.FC<AdminPanelProps> = ({ onBackToSite }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [authError, setAuthError] = useState('');
+
+  const [activeTab, setActiveTab] = useState<AdminTab>('music');
+  const [loadingData, setLoadingData] = useState(false);
+  const [toast, setToast] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+
+  // GitHub repo storage config (stored locally in admin browser only, never in Firestore)
+  const [ghConfig, setGhConfig] = useState<GitHubConfig>(() => loadGitHubConfig());
+  const [showGhDrawer, setShowGhDrawer] = useState(() => !isGitHubReady(loadGitHubConfig()));
+  const [testingGh, setTestingGh] = useState(false);
+  const [cleaningLegacy, setCleaningLegacy] = useState(false);
+
+  // CMS data (text, links & lightweight paths only)
+  const [config, setConfig] = useState<SiteConfig>(DEFAULT_SITE_CONFIG);
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  const [collabs, setCollabs] = useState<Collaboration[]>([]);
+
+  // Saving / uploading flags
+  const [savingConfig, setSavingConfig] = useState(false);
+  const [uploadingBgVideo, setUploadingBgVideo] = useState(false);
+  const [uploadingPortrait, setUploadingPortrait] = useState(false);
+
+  // Track creation state
+  const [trackSourceMode, setTrackSourceMode] = useState<'github' | 'url'>('github');
+  const [newTrackTitle, setNewTrackTitle] = useState('');
+  const [newTrackArtist, setNewTrackArtist] = useState('SMOKK');
+  const [newTrackUrl, setNewTrackUrl] = useState('');
+  const [newTrackFile, setNewTrackFile] = useState<File | null>(null);
+  const [uploadingTrack, setUploadingTrack] = useState(false);
+
+  // Track replace & edit & preview
+  const [replacingTrackId, setReplacingTrackId] = useState<string | null>(null);
+  const [editingTrackId, setEditingTrackId] = useState<string | null>(null);
+  const [editTrackTitle, setEditTrackTitle] = useState('');
+  const [editTrackArtist, setEditTrackArtist] = useState('');
+  const [editTrackUrl, setEditTrackUrl] = useState('');
+  const [editTrackOrder, setEditTrackOrder] = useState(1);
+  const [confirmDeleteTrackId, setConfirmDeleteTrackId] = useState<string | null>(null);
+
+  // Inline audio preview
+  const [previewTrackId, setPreviewTrackId] = useState<string | null>(null);
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+  const replaceInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+  // Gallery creation state
+  const [newGalleryTitle, setNewGalleryTitle] = useState('');
+  const [newGalleryImageUrl, setNewGalleryImageUrl] = useState('');
+  const [newGalleryPreview, setNewGalleryPreview] = useState('');
+  const [uploadingGalleryImg, setUploadingGalleryImg] = useState(false);
+  const [savingGallery, setSavingGallery] = useState(false);
+  const [confirmDeleteGalleryId, setConfirmDeleteGalleryId] = useState<string | null>(null);
+
+  // Collaboration creation/edit state
+  const [editingCollabId, setEditingCollabId] = useState<string | null>(null);
+  const [collabTitle, setCollabTitle] = useState('');
+  const [collabDesc, setCollabDesc] = useState('');
+  const [collabImageUrl, setCollabImageUrl] = useState('');
+  const [collabImagePreview, setCollabImagePreview] = useState('');
+  const [collabVideoUrl, setCollabVideoUrl] = useState('');
+  const [collabYoutube, setCollabYoutube] = useState('');
+  const [collabSpotify, setCollabSpotify] = useState('');
+  const [collabFeaturedArtist, setCollabFeaturedArtist] = useState(false);
+  const [collabArtistName, setCollabArtistName] = useState('');
+  const [collabArtistPhotoUrl, setCollabArtistPhotoUrl] = useState('');
+  const [collabArtistPhotoPreview, setCollabArtistPhotoPreview] = useState('');
+  const [collabArtistDesc, setCollabArtistDesc] = useState('');
+  const [uploadingCollabImg, setUploadingCollabImg] = useState(false);
+  const [uploadingArtistImg, setUploadingArtistImg] = useState(false);
+  const [savingCollab, setSavingCollab] = useState(false);
+  const [confirmDeleteCollabId, setConfirmDeleteCollabId] = useState<string | null>(null);
+
+  const [portraitPreview, setPortraitPreview] = useState('');
+
+  const showToast = useCallback((type: 'ok' | 'err', text: string) => {
+    setToast({ type, text });
+  }, []);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = window.setTimeout(() => setToast(null), 6500);
+    return () => window.clearTimeout(t);
+  }, [toast]);
+
+  // Auth listener
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (nextUser) => {
+      setUser(nextUser);
+      if (nextUser) {
+        const allowed = await checkIsAdmin(nextUser);
+        setIsAdmin(allowed);
+      } else {
+        setIsAdmin(false);
+      }
+      setAuthLoading(false);
+    });
+    return () => unsub();
+  }, []);
+
+  // Load ONLY lightweight text/link collections once on login
+  const loadAllAdminData = useCallback(async () => {
+    setLoadingData(true);
+    try {
+      const [cfg, trk, gal, col] = await Promise.all([
+        fetchSiteConfig(),
+        fetchAllTracksAdmin(),
+        fetchAllGalleryAdmin(),
+        fetchAllCollaborationsAdmin(),
+      ]);
+      setConfig(cfg);
+      setTracks(trk);
+      setGallery(gal);
+      setCollabs(col);
+    } catch (err) {
+      showToast(
+        'err',
+        err instanceof Error ? err.message : 'No se pudieron cargar los datos de Firebase.'
+      );
+    } finally {
+      setLoadingData(false);
+    }
+  }, [showToast]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      void loadAllAdminData();
+    }
+  }, [isAdmin, loadAllAdminData]);
+
+  const handleSaveGhConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    saveGitHubConfig(ghConfig);
+    setTestingGh(true);
+    try {
+      const result = await testGitHubConnection(ghConfig);
+      if (result.ok) {
+        showToast('ok', result.message);
+        setShowGhDrawer(false);
+      } else {
+        showToast('err', result.message);
+      }
+    } catch (err) {
+      showToast('err', err instanceof Error ? err.message : 'Error al probar conexión con GitHub.');
+    } finally {
+      setTestingGh(false);
+    }
+  };
+
+  const handleCleanupLegacy = async () => {
+    if (!user) return;
+    setCleaningLegacy(true);
+    try {
+      const res = await cleanupLegacyFirestoreBlobs(user.uid);
+      await loadAllAdminData();
+      showToast(
+        'ok',
+        `Limpieza completada: ${res.deletedChunks} bloques pesados y ${res.cleanedDocs} registros viejos eliminados de Firebase.`
+      );
+    } catch (err) {
+      showToast(
+        'err',
+        err instanceof Error ? err.message : 'No se pudo limpiar los archivos viejos.'
+      );
+    } finally {
+      setCleaningLegacy(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setAuthError('');
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (err) {
+      setAuthError(
+        err instanceof Error ? err.message : 'No se pudo iniciar sesión con Google.'
+      );
+    }
+  };
+
+  const handleSignOut = async () => {
+    stopPreview();
+    await signOut(auth);
+  };
+
+  // =========================================================================
+  // AUDIO PREVIEW (PLAYS DIRECTLY FROM GITHUB PAGES / URL — 0 FIRESTORE READS)
+  // =========================================================================
+  const stopPreview = () => {
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+      previewAudioRef.current.currentTime = 0;
+    }
+    setPreviewTrackId(null);
+  };
+
+  const togglePreviewTrack = async (track: Track) => {
+    if (previewTrackId === track.id) {
+      stopPreview();
+      return;
+    }
+    stopPreview();
+    if (track.sourceType !== 'url' || !track.audioUrl) {
+      showToast(
+        'err',
+        'Esta canción es un archivo viejo guardado en Firebase. Reemplazala para subirla a GitHub.'
+      );
+      return;
+    }
+    try {
+      const audio = previewAudioRef.current;
+      if (audio) {
+        audio.src = resolveMediaUrl(track.audioUrl);
+        await audio.play();
+        setPreviewTrackId(track.id);
+      }
+    } catch {
+      showToast(
+        'err',
+        'No se pudo reproducir todavía (si recién lo subiste a GitHub, esperá ~1 minuto a que GitHub Pages publique).'
+      );
+    }
+  };
+
+  // =========================================================================
+  // TRACK HANDLERS (UPLOAD TO GITHUB, SAVE ONLY ~50-BYTE PATH IN FIRESTORE)
+  // =========================================================================
+  const handleAddTrack = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    const title = newTrackTitle.trim();
+    const artist = newTrackArtist.trim() || config.artistName || 'SMOKK';
+
+    if (!title) {
+      showToast('err', 'Ingresá el título de la canción.');
+      return;
+    }
+
+    setUploadingTrack(true);
+    try {
+      const nextOrder = tracks.length > 0 ? Math.max(...tracks.map((t) => t.order)) + 1 : 1;
+      let finalUrl = '';
+      let finalFileName = '';
+
+      if (trackSourceMode === 'github') {
+        if (!newTrackFile) {
+          showToast('err', 'Seleccioná un archivo MP3 para subir a GitHub.');
+          setUploadingTrack(false);
+          return;
+        }
+        const uploaded = await uploadFileToGitHub(newTrackFile, 'musica', ghConfig);
+        finalUrl = uploaded.publicPath;
+        finalFileName = uploaded.fileName;
+      } else {
+        if (!newTrackUrl.trim()) {
+          showToast('err', 'Ingresá la ruta en GitHub (ej: /material/uploads/musica/tema.mp3) o una URL.');
+          setUploadingTrack(false);
+          return;
+        }
+        finalUrl = newTrackUrl.trim();
+        finalFileName = finalUrl.split('/').pop() || 'audio.mp3';
+      }
+
+      await createTrackWithUrl(
+        {
+          title,
+          artist,
+          audioUrl: finalUrl,
+          fileName: finalFileName,
+          order: nextOrder,
+          isPublic: true,
+        },
+        user.uid
+      );
+
+      setNewTrackTitle('');
+      setNewTrackArtist(config.artistName || 'SMOKK');
+      setNewTrackFile(null);
+      setNewTrackUrl('');
+      setTracks(await fetchAllTracksAdmin());
+      showToast(
+        'ok',
+        trackSourceMode === 'github'
+          ? 'MP3 subido a GitHub y enlazado en Firebase (0 KB pesados en Firebase). GitHub Pages lo publica en ~1 min.'
+          : 'Canción guardada y activa en la web.'
+      );
+    } catch (err) {
+      showToast('err', err instanceof Error ? err.message : 'Error al guardar la canción.');
+    } finally {
+      setUploadingTrack(false);
+    }
+  };
+
+  const handleReplaceMp3 = async (track: Track, file: File | undefined) => {
+    if (!file || !user) return;
+    stopPreview();
+    setReplacingTrackId(track.id);
+    try {
+      const uploaded = await uploadFileToGitHub(file, 'musica', ghConfig);
+      await replaceTrackAudioSource(track, uploaded.publicPath, uploaded.fileName);
+      setTracks(await fetchAllTracksAdmin());
+      showToast(
+        'ok',
+        `MP3 reemplazado en GitHub para "${track.title}". GitHub Pages lo actualiza en ~1 min.`
+      );
+    } catch (err) {
+      showToast('err', err instanceof Error ? err.message : 'No se pudo reemplazar el MP3.');
+    } finally {
+      setReplacingTrackId(null);
+    }
+  };
+
+  const startEditTrack = (track: Track) => {
+    setEditingTrackId(track.id);
+    setEditTrackTitle(track.title);
+    setEditTrackArtist(track.artist);
+    setEditTrackUrl(track.audioUrl);
+    setEditTrackOrder(track.order);
+  };
+
+  const saveEditTrack = async (track: Track) => {
+    try {
+      await updateTrackMeta(track, {
+        title: editTrackTitle.trim() || track.title,
+        artist: editTrackArtist.trim() || track.artist,
+        audioUrl: editTrackUrl.trim() || track.audioUrl,
+        order: Number(editTrackOrder) || 1,
+      });
+      setEditingTrackId(null);
+      setTracks(await fetchAllTracksAdmin());
+      showToast('ok', 'Datos de la canción actualizados.');
+    } catch (err) {
+      showToast('err', err instanceof Error ? err.message : 'Error al actualizar canción.');
+    }
+  };
+
+  const toggleTrackVisibility = async (track: Track) => {
+    try {
+      await updateTrackMeta(track, { isPublic: !track.isPublic });
+      setTracks(await fetchAllTracksAdmin());
+      showToast(
+        'ok',
+        !track.isPublic ? 'Canción activada en la web.' : 'Canción ocultada de la web.'
+      );
+    } catch (err) {
+      showToast('err', err instanceof Error ? err.message : 'Error al cambiar visibilidad.');
+    }
+  };
+
+  const handleDeleteTrack = async (track: Track) => {
+    stopPreview();
+    try {
+      await deleteTrackWithChunks(track);
+      setConfirmDeleteTrackId(null);
+      setTracks(await fetchAllTracksAdmin());
+      showToast('ok', 'Canción eliminada.');
+    } catch (err) {
+      showToast('err', err instanceof Error ? err.message : 'Error al eliminar la canción.');
+    }
+  };
+
+  // =========================================================================
+  // CONFIG HANDLERS (UPLOAD PORTRAIT & BACKGROUND VIDEO TO GITHUB)
+  // =========================================================================
+  const handleSaveConfig = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!user) return;
+    setSavingConfig(true);
+    try {
+      await saveSiteConfig(config, user.uid);
+      showToast('ok', 'Cambios guardados en Firebase.');
+    } catch (err) {
+      showToast('err', err instanceof Error ? err.message : 'Error al guardar configuración.');
+    } finally {
+      setSavingConfig(false);
+    }
+  };
+
+  const handleUploadPortraitToGitHub = async (file: File | undefined) => {
+    if (!file || !user) return;
+    setUploadingPortrait(true);
+    try {
+      const optimized = await optimizeImageForGitHub(file, 1400);
+      const localPreview = URL.createObjectURL(optimized);
+      setPortraitPreview(localPreview);
+      const uploaded = await uploadFileToGitHub(optimized, 'imagenes', ghConfig);
+      const nextCfg = { ...config, portraitImage: uploaded.publicPath };
+      setConfig(nextCfg);
+      await saveSiteConfig(nextCfg, user.uid);
+      showToast(
+        'ok',
+        'Imagen principal subida a GitHub y guardada. GitHub Pages la publica en ~1 min.'
+      );
+    } catch (err) {
+      showToast('err', err instanceof Error ? err.message : 'No se pudo subir la imagen a GitHub.');
+    } finally {
+      setUploadingPortrait(false);
+    }
+  };
+
+  const handleUploadBgVideoToGitHub = async (file: File | undefined) => {
+    if (!file || !user) return;
+    setUploadingBgVideo(true);
+    try {
+      const uploaded = await uploadFileToGitHub(file, 'video', ghConfig, 24 * 1024 * 1024);
+      const nextCfg = { ...config, backgroundVideoUrl: uploaded.publicPath };
+      setConfig(nextCfg);
+      await saveSiteConfig(nextCfg, user.uid);
+      showToast(
+        'ok',
+        'Video de fondo subido a GitHub y guardado (0 KB en Firebase). GitHub Pages lo publica en ~1 min.'
+      );
+    } catch (err) {
+      showToast(
+        'err',
+        err instanceof Error ? err.message : 'No se pudo subir el video de fondo a GitHub.'
+      );
+    } finally {
+      setUploadingBgVideo(false);
+    }
+  };
+
+  const handleClearBgVideo = async () => {
+    if (!user) return;
+    setSavingConfig(true);
+    try {
+      const nextCfg = { ...config, backgroundVideoUrl: '' };
+      setConfig(nextCfg);
+      await saveSiteConfig(nextCfg, user.uid);
+      showToast('ok', 'Video de fondo quitado.');
+    } catch (err) {
+      showToast('err', err instanceof Error ? err.message : 'No se pudo quitar el video.');
+    } finally {
+      setSavingConfig(false);
+    }
+  };
+
+  // =========================================================================
+  // GALLERY HANDLERS (UPLOAD IMAGE TO GITHUB, SAVE ONLY PATH IN FIRESTORE)
+  // =========================================================================
+  const handleGalleryFilePick = async (file: File | undefined) => {
+    if (!file) return;
+    setUploadingGalleryImg(true);
+    try {
+      const optimized = await optimizeImageForGitHub(file, 1400);
+      setNewGalleryPreview(URL.createObjectURL(optimized));
+      const uploaded = await uploadFileToGitHub(optimized, 'galeria', ghConfig);
+      setNewGalleryImageUrl(uploaded.publicPath);
+      if (!newGalleryTitle.trim()) {
+        setNewGalleryTitle(file.name.replace(/\.[^.]+$/, ''));
+      }
+      showToast('ok', 'Foto subida a GitHub. Tocá "Publicar en galería" para guardarla.');
+    } catch (err) {
+      showToast('err', err instanceof Error ? err.message : 'Error al subir imagen a GitHub.');
+    } finally {
+      setUploadingGalleryImg(false);
+    }
+  };
+
+  const handleAddGallery = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    if (!newGalleryImageUrl.trim()) {
+      showToast('err', 'Subí una foto a GitHub o pegá una ruta/URL de imagen.');
+      return;
+    }
+    setSavingGallery(true);
+    try {
+      const nextOrder = gallery.length > 0 ? Math.max(...gallery.map((g) => g.order)) + 1 : 1;
+      await addGalleryItem(
+        {
+          title: newGalleryTitle.trim(),
+          imageUrl: newGalleryImageUrl.trim(),
+          order: nextOrder,
+          isPublic: true,
+        },
+        user.uid
+      );
+      setNewGalleryTitle('');
+      setNewGalleryImageUrl('');
+      setNewGalleryPreview('');
+      setGallery(await fetchAllGalleryAdmin());
+      showToast('ok', 'Imagen agregada a la galería.');
+    } catch (err) {
+      showToast('err', err instanceof Error ? err.message : 'Error al guardar la imagen.');
+    } finally {
+      setSavingGallery(false);
+    }
+  };
+
+  const toggleGalleryVisibility = async (item: GalleryItem) => {
+    try {
+      await updateGalleryItem(item.id, {
+        title: item.title,
+        imageUrl: item.imageUrl,
+        order: item.order,
+        isPublic: !item.isPublic,
+      });
+      setGallery(await fetchAllGalleryAdmin());
+    } catch (err) {
+      showToast('err', err instanceof Error ? err.message : 'Error al actualizar imagen.');
+    }
+  };
+
+  const handleDeleteGallery = async (id: string) => {
+    try {
+      await deleteGalleryItem(id);
+      setConfirmDeleteGalleryId(null);
+      setGallery(await fetchAllGalleryAdmin());
+      showToast('ok', 'Imagen eliminada.');
+    } catch (err) {
+      showToast('err', err instanceof Error ? err.message : 'Error al eliminar imagen.');
+    }
+  };
+
+  // =========================================================================
+  // COLLABORATIONS HANDLERS (IMAGES TO GITHUB, METADATA TO FIRESTORE)
+  // =========================================================================
+  const resetCollabForm = () => {
+    setEditingCollabId(null);
+    setCollabTitle('');
+    setCollabDesc('');
+    setCollabImageUrl('');
+    setCollabImagePreview('');
+    setCollabVideoUrl('');
+    setCollabYoutube('');
+    setCollabSpotify('');
+    setCollabFeaturedArtist(false);
+    setCollabArtistName('');
+    setCollabArtistPhotoUrl('');
+    setCollabArtistPhotoPreview('');
+    setCollabArtistDesc('');
+  };
+
+  const handleCollabImagePick = async (file: File | undefined) => {
+    if (!file) return;
+    setUploadingCollabImg(true);
+    try {
+      const optimized = await optimizeImageForGitHub(file, 1000);
+      setCollabImagePreview(URL.createObjectURL(optimized));
+      const uploaded = await uploadFileToGitHub(optimized, 'colabs', ghConfig);
+      setCollabImageUrl(uploaded.publicPath);
+      showToast('ok', 'Imagen de colaboración subida a GitHub.');
+    } catch (err) {
+      showToast('err', err instanceof Error ? err.message : 'Error al subir imagen a GitHub.');
+    } finally {
+      setUploadingCollabImg(false);
+    }
+  };
+
+  const handleCollabArtistPhotoPick = async (file: File | undefined) => {
+    if (!file) return;
+    setUploadingArtistImg(true);
+    try {
+      const optimized = await optimizeImageForGitHub(file, 900);
+      setCollabArtistPhotoPreview(URL.createObjectURL(optimized));
+      const uploaded = await uploadFileToGitHub(optimized, 'artistas', ghConfig);
+      setCollabArtistPhotoUrl(uploaded.publicPath);
+      showToast('ok', 'Foto del artista subida a GitHub.');
+    } catch (err) {
+      showToast(
+        'err',
+        err instanceof Error ? err.message : 'Error al subir la foto del artista a GitHub.'
+      );
+    } finally {
+      setUploadingArtistImg(false);
+    }
+  };
+
+  const handleSaveCollab = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    if (!collabTitle.trim()) {
+      showToast('err', 'Ingresá el título de la canción o colaboración.');
+      return;
+    }
+    if (collabFeaturedArtist && !collabArtistName.trim()) {
+      showToast('err', 'Ingresá el nombre del artista destacado.');
+      return;
+    }
+    setSavingCollab(true);
+    try {
+      const payload = {
+        title: collabTitle.trim(),
+        description: collabDesc.trim(),
+        imageUrl: collabImageUrl.trim(),
+        videoUrl: collabVideoUrl.trim(),
+        youtubeUrl: collabYoutube.trim(),
+        spotifyUrl: collabSpotify.trim(),
+        isFeaturedArtist: collabFeaturedArtist,
+        artistName: collabFeaturedArtist ? collabArtistName.trim() : '',
+        artistPhotoUrl: collabFeaturedArtist ? collabArtistPhotoUrl.trim() : '',
+        artistDescription: collabFeaturedArtist ? collabArtistDesc.trim() : '',
+      };
+
+      if (editingCollabId) {
+        const existing = collabs.find((c) => c.id === editingCollabId);
+        await updateCollaboration(editingCollabId, {
+          ...payload,
+          order: existing?.order ?? 1,
+          isPublic: existing?.isPublic ?? true,
+        });
+        showToast('ok', 'Colaboración actualizada.');
+      } else {
+        const nextOrder = collabs.length > 0 ? Math.max(...collabs.map((c) => c.order)) + 1 : 1;
+        await addCollaboration(
+          {
+            ...payload,
+            order: nextOrder,
+            isPublic: true,
+          },
+          user.uid
+        );
+        showToast('ok', 'Colaboración publicada.');
+      }
+      resetCollabForm();
+      setCollabs(await fetchAllCollaborationsAdmin());
+    } catch (err) {
+      showToast('err', err instanceof Error ? err.message : 'Error al guardar colaboración.');
+    } finally {
+      setSavingCollab(false);
+    }
+  };
+
+  const startEditCollab = (item: Collaboration) => {
+    setEditingCollabId(item.id);
+    setCollabTitle(item.title);
+    setCollabDesc(item.description);
+    setCollabImageUrl(item.imageUrl);
+    setCollabImagePreview('');
+    setCollabVideoUrl(item.videoUrl);
+    setCollabYoutube(item.youtubeUrl);
+    setCollabSpotify(item.spotifyUrl);
+    setCollabFeaturedArtist(Boolean(item.isFeaturedArtist));
+    setCollabArtistName(item.artistName || '');
+    setCollabArtistPhotoUrl(item.artistPhotoUrl || '');
+    setCollabArtistPhotoPreview('');
+    setCollabArtistDesc(item.artistDescription || '');
+  };
+
+  const toggleCollabVisibility = async (item: Collaboration) => {
+    try {
+      await updateCollaboration(item.id, {
+        title: item.title,
+        description: item.description,
+        imageUrl: item.imageUrl,
+        videoUrl: item.videoUrl,
+        youtubeUrl: item.youtubeUrl,
+        spotifyUrl: item.spotifyUrl,
+        isFeaturedArtist: item.isFeaturedArtist,
+        artistName: item.artistName,
+        artistPhotoUrl: item.artistPhotoUrl,
+        artistDescription: item.artistDescription,
+        order: item.order,
+        isPublic: !item.isPublic,
+      });
+      setCollabs(await fetchAllCollaborationsAdmin());
+    } catch (err) {
+      showToast('err', err instanceof Error ? err.message : 'Error al actualizar colaboración.');
+    }
+  };
+
+  const handleDeleteCollab = async (id: string) => {
+    try {
+      await deleteCollaboration(id);
+      setConfirmDeleteCollabId(null);
+      if (editingCollabId === id) resetCollabForm();
+      setCollabs(await fetchAllCollaborationsAdmin());
+      showToast('ok', 'Colaboración eliminada.');
+    } catch (err) {
+      showToast('err', err instanceof Error ? err.message : 'Error al eliminar colaboración.');
+    }
+  };
+
+  // =========================================================================
+  // RENDER: LOADING / LOGIN GATE / UNAUTHORIZED
+  // =========================================================================
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#080809] text-[#f5f3f3] flex items-center justify-center p-6">
+        <div className="text-center space-y-3">
+          <div className="w-8 h-8 border-2 border-[#f02b49] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs tracking-[0.2em] uppercase text-[#aaa6aa]">
+            Verificando sesión…
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#080809] text-[#f5f3f3] flex flex-col items-center justify-center p-6">
+        <div className="w-full max-w-md border border-white/15 bg-[#111113] p-8 space-y-6">
+          <div className="space-y-2">
+            <p className="text-[11px] font-bold tracking-[0.24em] text-[#f02b49] uppercase">
+              PANEL DE ADMINISTRACIÓN
+            </p>
+            <h1 className="font-['Barlow_Condensed'] text-5xl font-black tracking-tight leading-none">
+              SMOKK <span className="text-[#f02b49]">ADMIN</span>
+            </h1>
+            <p className="text-sm text-[#aaa6aa]">
+              Iniciá sesión con tu cuenta de Google autorizada para administrar canciones MP3,
+              videos, galería, colaboraciones y textos.
+            </p>
+          </div>
+
+          {authError && (
+            <div className="border border-[#f02b49]/50 bg-[#c10e2e]/15 p-3 text-xs text-[#ffd2d9]">
+              {authError}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            className="w-full py-3.5 px-5 bg-[#c10e2e] hover:bg-[#e0163a] text-white text-xs font-extrabold tracking-[0.14em] uppercase transition-colors flex items-center justify-center gap-2.5"
+          >
+            Ingresar con Google
+          </button>
+
+          <button
+            type="button"
+            onClick={onBackToSite}
+            className="w-full py-3 px-4 border border-white/15 hover:border-white/35 text-xs font-bold tracking-[0.12em] uppercase text-[#c5c0c3] flex items-center justify-center gap-2 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Volver a la página pública
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-[#080809] text-[#f5f3f3] flex flex-col items-center justify-center p-6">
+        <div className="w-full max-w-md border border-[#f02b49]/40 bg-[#111113] p-8 space-y-5">
+          <div className="flex items-center gap-3 text-[#f02b49]">
+            <ShieldAlert className="w-6 h-6 shrink-0" />
+            <p className="text-xs font-extrabold tracking-[0.2em] uppercase">ACCESO RESTRINGIDO</p>
+          </div>
+          <h1 className="font-['Barlow_Condensed'] text-4xl font-black tracking-tight">
+            CUENTA NO AUTORIZADA
+          </h1>
+          <p className="text-sm text-[#aaa6aa]">
+            Ingresaste como <strong className="text-white">{user.email}</strong>, pero esta cuenta
+            no tiene permisos de administrador para SMOKK.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="flex-1 py-3 px-4 bg-[#c10e2e] hover:bg-[#e0163a] text-white text-xs font-extrabold tracking-[0.12em] uppercase"
+            >
+              Cambiar de cuenta
+            </button>
+            <button
+              type="button"
+              onClick={onBackToSite}
+              className="flex-1 py-3 px-4 border border-white/15 hover:border-white/35 text-xs font-bold tracking-[0.12em] uppercase text-[#c5c0c3]"
+            >
+              Ir al sitio
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const previewYoutubeId = getYoutubeId(config.featuredVideoUrl) || 'u9YXc_-Qgec';
+  const ghConnected = isGitHubReady(ghConfig);
+  const hasLegacyItems =
+    tracks.some((t) => t.sourceType === 'upload' || t.chunkCount > 0) ||
+    isBase64DataUrl(config.portraitImage) ||
+    isBase64DataUrl(config.backgroundImage) ||
+    gallery.some((g) => isBase64DataUrl(g.imageUrl)) ||
+    collabs.some((c) => isBase64DataUrl(c.imageUrl) || isBase64DataUrl(c.artistPhotoUrl));
+
+  return (
+    <div className="min-h-screen bg-[#080809] text-[#f5f3f3] pb-16">
+      <audio
+        ref={previewAudioRef}
+        onEnded={() => setPreviewTrackId(null)}
+        onPause={() => setPreviewTrackId(null)}
+      />
+
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-30 border-b border-white/15 bg-[#080809]/92 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="w-8 h-8 bg-[#c10e2e] grid place-items-center font-['Barlow_Condensed'] font-black text-xl leading-none shrink-0">
+              S
+            </span>
+            <div className="min-w-0">
+              <p className="font-['Barlow_Condensed'] text-xl font-black tracking-tight leading-none">
+                SMOKK <span className="text-[#f02b49]">ADMIN</span>
+              </p>
+              <p className="text-[11px] text-[#aaa6aa] truncate">{user.email}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={onBackToSite}
+              className="px-3.5 py-2 border border-white/20 hover:border-white/45 text-[11px] font-bold tracking-[0.12em] uppercase flex items-center gap-1.5 transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Ver sitio</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="px-3.5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-bold tracking-[0.12em] uppercase flex items-center gap-1.5 text-[#d3ced0] transition-colors"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Salir</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
+        {/* Toast Banner */}
+        {toast && (
+          <div
+            role="status"
+            className={`p-3.5 border text-sm flex items-center gap-2.5 ${
+              toast.type === 'ok'
+                ? 'border-emerald-500/40 bg-emerald-950/50 text-emerald-100'
+                : 'border-[#f02b49]/50 bg-[#c10e2e]/20 text-[#ffd2d9]'
+            }`}
+          >
+            {toast.type === 'ok' ? (
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+            ) : (
+              <ShieldAlert className="w-4 h-4 shrink-0 text-[#f02b49]" />
+            )}
+            <span>{toast.text}</span>
+          </div>
+        )}
+
+        {/* GitHub Media Storage Connection Bar */}
+        <section className="border border-white/15 bg-[#111113] p-4 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <FolderGit2
+                className={`w-5 h-5 shrink-0 ${
+                  ghConnected ? 'text-emerald-400' : 'text-[#f02b49]'
+                }`}
+              />
+              <div className="min-w-0">
+                <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-white">
+                  {ghConnected
+                    ? `Archivos en GitHub: ${ghConfig.owner}/${ghConfig.repo}`
+                    : 'Conectá GitHub para subir MP3, videos y fotos gratis'}
+                </p>
+                <p className="text-[11px] text-[#aaa6aa]">
+                  Los archivos pesados se guardan en tu repo de GitHub (0 KB en Firebase). Firebase
+                  solo guarda textos y enlaces.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {hasLegacyItems && (
+                <button
+                  type="button"
+                  disabled={cleaningLegacy}
+                  onClick={() => void handleCleanupLegacy()}
+                  className="px-3 py-1.5 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-[11px] font-bold uppercase tracking-wider text-amber-200"
+                >
+                  {cleaningLegacy ? 'Limpiando…' : 'Limpiar archivos viejos de Firebase'}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowGhDrawer((prev) => !prev)}
+                className="px-3 py-1.5 border border-white/20 hover:border-white/45 text-[11px] font-bold uppercase tracking-wider text-[#d3ced0]"
+              >
+                {showGhDrawer ? 'Ocultar' : ghConnected ? 'Configurar GitHub' : 'Conectar GitHub'}
+              </button>
+            </div>
+          </div>
+
+          {showGhDrawer && (
+            <form
+              onSubmit={handleSaveGhConfig}
+              className="pt-3 border-t border-white/10 grid grid-cols-1 sm:grid-cols-12 gap-3 items-end"
+            >
+              <div className="sm:col-span-3">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#c5c0c3] mb-1">
+                  Usuario de GitHub
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={ghConfig.owner}
+                  onChange={(e) => setGhConfig((p) => ({ ...p, owner: e.target.value }))}
+                  placeholder="tu-usuario"
+                  className="w-full bg-[#080809] border border-white/15 px-3 py-2 text-xs text-white focus:border-[#f02b49] focus:outline-none"
+                />
+              </div>
+              <div className="sm:col-span-3">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#c5c0c3] mb-1">
+                  Repositorio
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={ghConfig.repo}
+                  onChange={(e) => setGhConfig((p) => ({ ...p, repo: e.target.value }))}
+                  placeholder="smokk"
+                  className="w-full bg-[#080809] border border-white/15 px-3 py-2 text-xs text-white focus:border-[#f02b49] focus:outline-none"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#c5c0c3] mb-1">
+                  Rama
+                </label>
+                <input
+                  type="text"
+                  value={ghConfig.branch}
+                  onChange={(e) => setGhConfig((p) => ({ ...p, branch: e.target.value }))}
+                  placeholder="main"
+                  className="w-full bg-[#080809] border border-white/15 px-3 py-2 text-xs text-white focus:border-[#f02b49] focus:outline-none"
+                />
+              </div>
+              <div className="sm:col-span-4">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#c5c0c3] mb-1">
+                  Token de acceso del repo (solo en este navegador)
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={ghConfig.token}
+                  onChange={(e) => setGhConfig((p) => ({ ...p, token: e.target.value }))}
+                  placeholder="github_pat_..."
+                  className="w-full bg-[#080809] border border-white/15 px-3 py-2 text-xs text-white focus:border-[#f02b49] focus:outline-none"
+                />
+              </div>
+              <div className="sm:col-span-12 flex flex-wrap items-center justify-between gap-2 pt-1">
+                <p className="text-[11px] text-[#aaa6aa]">
+                  En GitHub: Settings → Developer settings → Personal access tokens → Fine-grained
+                  tokens → elegí tu repo con permiso <strong className="text-white">Contents: Read and write</strong>.
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  {!hasLegacyItems && (
+                    <button
+                      type="button"
+                      disabled={cleaningLegacy}
+                      onClick={() => void handleCleanupLegacy()}
+                      className="px-3 py-2 border border-white/15 hover:border-white/35 disabled:opacity-50 text-[11px] font-bold uppercase tracking-wider text-[#c5c0c3]"
+                    >
+                      {cleaningLegacy ? 'Limpiando…' : 'Limpiar residuos viejos en Firebase'}
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={testingGh}
+                    className="px-4 py-2 bg-[#c10e2e] hover:bg-[#e0163a] disabled:opacity-50 text-white text-[11px] font-extrabold uppercase tracking-wider"
+                  >
+                    {testingGh ? 'Verificando…' : 'Guardar y probar'}
+                  </button>
+                </div>
+              </div>
+            </form>
+          )}
+        </section>
+
+        {/* Section Tabs */}
+        <nav
+          aria-label="Secciones de administración"
+          className="flex flex-wrap gap-2 border-b border-white/15 pb-4"
+        >
+          {(
+            [
+              { id: 'music', label: 'Música (MP3)', icon: Music },
+              { id: 'video', label: 'Video destacado', icon: Film },
+              { id: 'gallery', label: 'Galería', icon: ImageIcon },
+              { id: 'collabs', label: 'Colaboraciones', icon: Users },
+              { id: 'general', label: 'General & Bio', icon: Settings },
+            ] as const
+          ).map(({ id, label, icon: Icon }) => {
+            const active = activeTab === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setActiveTab(id)}
+                className={`px-4 py-2.5 text-xs font-extrabold tracking-[0.12em] uppercase flex items-center gap-2 border transition-colors ${
+                  active
+                    ? 'bg-[#c10e2e] border-[#f02b49] text-white'
+                    : 'bg-[#111113] border-white/10 text-[#c5c0c3] hover:border-white/30'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {label}
+              </button>
+            );
+          })}
+        </nav>
+
+        {loadingData ? (
+          <div className="py-16 text-center text-xs tracking-[0.2em] uppercase text-[#aaa6aa]">
+            Cargando contenido…
+          </div>
+        ) : (
+          <>
+            {/* ===============================================================
+                TAB 1: MÚSICA (SUBE MP3 A GITHUB, GUARDA RUTA EN FIREBASE)
+               =============================================================== */}
+            {activeTab === 'music' && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <section className="lg:col-span-5 border border-white/15 bg-[#111113] p-6 space-y-5 h-fit">
+                  <div>
+                    <p className="text-[11px] font-bold tracking-[0.22em] text-[#f02b49] uppercase">
+                      NUEVA CANCIÓN
+                    </p>
+                    <h2 className="font-['Barlow_Condensed'] text-3xl font-black tracking-tight mt-1">
+                      SUBIR MP3 A GITHUB
+                    </h2>
+                    <p className="text-xs text-[#aaa6aa] mt-1">
+                      El archivo MP3 se guarda en tu repositorio de GitHub y suena desde GitHub
+                      Pages sin gastar cuota de Firebase.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setTrackSourceMode('github')}
+                      className={`py-2.5 px-3 text-[11px] font-extrabold tracking-[0.1em] uppercase border ${
+                        trackSourceMode === 'github'
+                          ? 'bg-[#c10e2e]/20 border-[#f02b49] text-white'
+                          : 'border-white/10 text-[#aaa6aa]'
+                      }`}
+                    >
+                      Subir MP3 a GitHub
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTrackSourceMode('url')}
+                      className={`py-2.5 px-3 text-[11px] font-extrabold tracking-[0.1em] uppercase border ${
+                        trackSourceMode === 'url'
+                          ? 'bg-[#c10e2e]/20 border-[#f02b49] text-white'
+                          : 'border-white/10 text-[#aaa6aa]'
+                      }`}
+                    >
+                      Ruta / URL MP3
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleAddTrack} className="space-y-4">
+                    <div>
+                      <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                        Título de la canción *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        maxLength={SCHEMA_LIMITS.trackTitle}
+                        value={newTrackTitle}
+                        onChange={(e) => setNewTrackTitle(e.target.value)}
+                        placeholder="Ej: Forte"
+                        className="w-full bg-[#080809] border border-white/15 px-3.5 py-2.5 text-sm text-white focus:border-[#f02b49] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                        Artista
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={SCHEMA_LIMITS.trackArtist}
+                        value={newTrackArtist}
+                        onChange={(e) => setNewTrackArtist(e.target.value)}
+                        placeholder="SMOKK"
+                        className="w-full bg-[#080809] border border-white/15 px-3.5 py-2.5 text-sm text-white focus:border-[#f02b49] focus:outline-none"
+                      />
+                    </div>
+
+                    {trackSourceMode === 'github' ? (
+                      <div>
+                        <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                          Archivo MP3 (hasta 24 MB, alojado en GitHub) *
+                        </label>
+                        <label className="flex flex-col items-center justify-center gap-2 border border-dashed border-white/25 hover:border-[#f02b49] bg-[#080809] p-5 text-center cursor-pointer transition-colors">
+                          <Upload className="w-5 h-5 text-[#f02b49]" />
+                          <span className="text-xs font-semibold text-white">
+                            {newTrackFile ? newTrackFile.name : 'Elegí tu archivo .mp3'}
+                          </span>
+                          <span className="text-[11px] text-[#aaa6aa]">
+                            {newTrackFile
+                              ? `${formatBytes(newTrackFile.size)} · Se subirá a GitHub`
+                              : 'Formatos: MP3, M4A, WAV, OGG · Máx 24 MB'}
+                          </span>
+                          <input
+                            type="file"
+                            accept="audio/mpeg,audio/mp3,audio/*,.mp3"
+                            className="hidden"
+                            onChange={(e) => {
+                              const picked = e.target.files?.[0] || null;
+                              setNewTrackFile(picked);
+                              if (picked && !newTrackTitle.trim()) {
+                                setNewTrackTitle(picked.name.replace(/\.[^.]+$/, ''));
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+                    ) : (
+                      <div>
+                        <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                          Ruta en GitHub o URL directa *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          maxLength={SCHEMA_LIMITS.mediaUrl}
+                          value={newTrackUrl}
+                          onChange={(e) => setNewTrackUrl(e.target.value)}
+                          placeholder="/material/uploads/musica/tema.mp3 o https://..."
+                          className="w-full bg-[#080809] border border-white/15 px-3.5 py-2.5 text-sm text-white focus:border-[#f02b49] focus:outline-none"
+                        />
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={uploadingTrack}
+                      className="w-full py-3.5 bg-[#c10e2e] hover:bg-[#e0163a] disabled:opacity-50 text-white text-xs font-extrabold tracking-[0.14em] uppercase flex items-center justify-center gap-2 transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      {uploadingTrack ? 'Subiendo a GitHub…' : 'Guardar canción'}
+                    </button>
+                  </form>
+                </section>
+
+                {/* Track List */}
+                <section className="lg:col-span-7 border border-white/15 bg-[#111113] p-6 space-y-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <p className="text-[11px] font-bold tracking-[0.22em] text-[#f02b49] uppercase">
+                        PLAYLIST ACTIVA
+                      </p>
+                      <h2 className="font-['Barlow_Condensed'] text-3xl font-black tracking-tight mt-1">
+                        CANCIONES CARGADAS ({tracks.length})
+                      </h2>
+                    </div>
+                  </div>
+
+                  {tracks.length === 0 ? (
+                    <div className="border border-dashed border-white/20 p-8 text-center text-sm text-[#aaa6aa]">
+                      Todavía no cargaste canciones. Usá el formulario de la izquierda para subir tu
+                      MP3 a GitHub.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {tracks.map((track, idx) => {
+                        const isReplacing = replacingTrackId === track.id;
+                        const isEditing = editingTrackId === track.id;
+                        const isPlayingPreview = previewTrackId === track.id;
+                        const isLegacy = track.sourceType === 'upload' || track.chunkCount > 0;
+
+                        return (
+                          <div
+                            key={track.id}
+                            className="border border-white/12 bg-[#080809] p-4 space-y-3"
+                          >
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                              <div className="flex items-start gap-3 min-w-0">
+                                <button
+                                  type="button"
+                                  disabled={isReplacing}
+                                  onClick={() => void togglePreviewTrack(track)}
+                                  title={isPlayingPreview ? 'Detener vista previa' : 'Escuchar MP3'}
+                                  className="w-10 h-10 bg-[#221015] hover:bg-[#c10e2e] border border-[#f02b49]/35 grid place-items-center shrink-0 transition-colors"
+                                >
+                                  {isPlayingPreview ? (
+                                    <Square className="w-4 h-4 fill-white" />
+                                  ) : (
+                                    <Play className="w-4 h-4 fill-white ml-0.5" />
+                                  )}
+                                </button>
+
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-[11px] font-extrabold text-[#f02b49]">
+                                      #{idx + 1}
+                                    </span>
+                                    <strong className="text-sm text-white truncate">
+                                      {track.title}
+                                    </strong>
+                                    <span
+                                      className={`text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider ${
+                                        track.isPublic
+                                          ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                                          : 'bg-white/5 text-[#aaa6aa] border border-white/15'
+                                      }`}
+                                    >
+                                      {track.isPublic ? 'Activa' : 'Oculta'}
+                                    </span>
+                                    {isLegacy && (
+                                      <span className="text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                                        Migrar a GitHub
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-[#aaa6aa] mt-0.5 truncate">
+                                    {track.artist} · {track.audioUrl || track.fileName || 'MP3'}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex flex-wrap items-center gap-2">
+                                <input
+                                  ref={(el) => {
+                                    replaceInputRefs.current[track.id] = el;
+                                  }}
+                                  type="file"
+                                  accept="audio/mpeg,audio/mp3,audio/*,.mp3"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    const picked = e.target.files?.[0];
+                                    e.target.value = '';
+                                    void handleReplaceMp3(track, picked);
+                                  }}
+                                />
+                                <button
+                                  type="button"
+                                  disabled={isReplacing}
+                                  onClick={() => replaceInputRefs.current[track.id]?.click()}
+                                  className="px-3 py-1.5 bg-[#c10e2e]/20 hover:bg-[#c10e2e] border border-[#f02b49]/50 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors"
+                                >
+                                  <RefreshCw
+                                    className={`w-3.5 h-3.5 ${isReplacing ? 'animate-spin' : ''}`}
+                                  />
+                                  {isReplacing ? 'Subiendo…' : 'Reemplazar MP3'}
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    isEditing ? setEditingTrackId(null) : startEditTrack(track)
+                                  }
+                                  className="px-2.5 py-1.5 border border-white/15 hover:border-white/35 text-[11px] font-bold uppercase text-[#d3ced0]"
+                                >
+                                  {isEditing ? 'Cancelar' : 'Editar'}
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => void toggleTrackVisibility(track)}
+                                  title={track.isPublic ? 'Ocultar' : 'Activar'}
+                                  className="p-1.5 border border-white/15 hover:border-white/35 text-[#d3ced0]"
+                                >
+                                  {track.isPublic ? (
+                                    <Eye className="w-4 h-4" />
+                                  ) : (
+                                    <EyeOff className="w-4 h-4" />
+                                  )}
+                                </button>
+
+                                {confirmDeleteTrackId === track.id ? (
+                                  <div className="flex items-center gap-1.5">
+                                    <button
+                                      type="button"
+                                      onClick={() => void handleDeleteTrack(track)}
+                                      className="px-2.5 py-1.5 bg-[#c10e2e] text-white text-[11px] font-extrabold uppercase"
+                                    >
+                                      Confirmar
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setConfirmDeleteTrackId(null)}
+                                      className="px-2 py-1.5 border border-white/15 text-[11px] text-[#aaa6aa]"
+                                    >
+                                      No
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => setConfirmDeleteTrackId(track.id)}
+                                    title="Eliminar canción"
+                                    className="p-1.5 border border-white/15 hover:border-[#f02b49] text-[#aaa6aa] hover:text-[#f02b49]"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+
+                            {isEditing && (
+                              <div className="pt-3 border-t border-white/10 grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                                <div className="sm:col-span-4">
+                                  <label className="block text-[10px] uppercase tracking-wider text-[#aaa6aa] mb-1">
+                                    Título
+                                  </label>
+                                  <input
+                                    type="text"
+                                    maxLength={SCHEMA_LIMITS.trackTitle}
+                                    value={editTrackTitle}
+                                    onChange={(e) => setEditTrackTitle(e.target.value)}
+                                    className="w-full bg-[#111113] border border-white/15 px-3 py-2 text-xs text-white"
+                                  />
+                                </div>
+                                <div className="sm:col-span-3">
+                                  <label className="block text-[10px] uppercase tracking-wider text-[#aaa6aa] mb-1">
+                                    Artista
+                                  </label>
+                                  <input
+                                    type="text"
+                                    maxLength={SCHEMA_LIMITS.trackArtist}
+                                    value={editTrackArtist}
+                                    onChange={(e) => setEditTrackArtist(e.target.value)}
+                                    className="w-full bg-[#111113] border border-white/15 px-3 py-2 text-xs text-white"
+                                  />
+                                </div>
+                                <div className="sm:col-span-3">
+                                  <label className="block text-[10px] uppercase tracking-wider text-[#aaa6aa] mb-1">
+                                    Ruta / URL MP3
+                                  </label>
+                                  <input
+                                    type="text"
+                                    maxLength={SCHEMA_LIMITS.mediaUrl}
+                                    value={editTrackUrl}
+                                    onChange={(e) => setEditTrackUrl(e.target.value)}
+                                    className="w-full bg-[#111113] border border-white/15 px-3 py-2 text-xs text-white"
+                                  />
+                                </div>
+                                <div className="sm:col-span-1">
+                                  <label className="block text-[10px] uppercase tracking-wider text-[#aaa6aa] mb-1">
+                                    Orden
+                                  </label>
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    max={1000}
+                                    value={editTrackOrder}
+                                    onChange={(e) => setEditTrackOrder(Number(e.target.value))}
+                                    className="w-full bg-[#111113] border border-white/15 px-2 py-2 text-xs text-white"
+                                  />
+                                </div>
+                                <div className="sm:col-span-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => void saveEditTrack(track)}
+                                    className="w-full py-2 bg-[#c10e2e] hover:bg-[#e0163a] text-white text-[11px] font-extrabold uppercase"
+                                  >
+                                    OK
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </section>
+              </div>
+            )}
+
+            {/* ===============================================================
+                TAB 2: VIDEO DESTACADO (ÚLTIMO ESTRENO)
+               =============================================================== */}
+            {activeTab === 'video' && (
+              <form
+                onSubmit={handleSaveConfig}
+                className="grid grid-cols-1 lg:grid-cols-12 gap-6"
+              >
+                <div className="lg:col-span-5 border border-white/15 bg-[#111113] p-6 space-y-4 h-fit">
+                  <div>
+                    <p className="text-[11px] font-bold tracking-[0.22em] text-[#f02b49] uppercase">
+                      SECCIÓN ÚLTIMO ESTRENO
+                    </p>
+                    <h2 className="font-['Barlow_Condensed'] text-3xl font-black tracking-tight mt-1">
+                      VIDEO DESTACADO DE YOUTUBE
+                    </h2>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                      Enlace o ID de YouTube
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={SCHEMA_LIMITS.url}
+                      value={config.featuredVideoUrl}
+                      onChange={(e) =>
+                        setConfig((prev) => ({ ...prev, featuredVideoUrl: e.target.value }))
+                      }
+                      placeholder="https://youtu.be/..."
+                      className="w-full bg-[#080809] border border-white/15 px-3.5 py-2.5 text-sm text-white focus:border-[#f02b49] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                      Epígrafe del video
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={SCHEMA_LIMITS.featuredVideoTitle}
+                      value={config.featuredVideoTitle}
+                      onChange={(e) =>
+                        setConfig((prev) => ({ ...prev, featuredVideoTitle: e.target.value }))
+                      }
+                      className="w-full bg-[#080809] border border-white/15 px-3.5 py-2.5 text-sm text-white focus:border-[#f02b49] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                      Descripción
+                    </label>
+                    <textarea
+                      rows={3}
+                      maxLength={SCHEMA_LIMITS.featuredVideoDescription}
+                      value={config.featuredVideoDescription}
+                      onChange={(e) =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          featuredVideoDescription: e.target.value,
+                        }))
+                      }
+                      className="w-full bg-[#080809] border border-white/15 px-3.5 py-2.5 text-sm text-white focus:border-[#f02b49] focus:outline-none"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={savingConfig}
+                    className="w-full py-3.5 bg-[#c10e2e] hover:bg-[#e0163a] disabled:opacity-50 text-white text-xs font-extrabold tracking-[0.14em] uppercase flex items-center justify-center gap-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    {savingConfig ? 'Guardando…' : 'Guardar video'}
+                  </button>
+                </div>
+
+                <div className="lg:col-span-7 border border-white/15 bg-[#111113] p-6 space-y-3">
+                  <p className="text-[11px] font-bold tracking-[0.2em] text-[#aaa6aa] uppercase">
+                    VISTA PREVIA EN VIVO
+                  </p>
+                  <div className="aspect-video w-full bg-black border border-white/10 overflow-hidden">
+                    <iframe
+                      src={`https://www.youtube-nocookie.com/embed/${previewYoutubeId}`}
+                      title="Vista previa del video destacado"
+                      className="w-full h-full border-0"
+                      allowFullScreen
+                    />
+                  </div>
+                  <p className="text-xs tracking-[0.14em] text-[#d4cdd0]">
+                    {config.featuredVideoTitle}
+                  </p>
+                </div>
+              </form>
+            )}
+
+            {/* ===============================================================
+                TAB 3: GALERÍA (OTROS PLANOS — FOTOS EN GITHUB)
+               =============================================================== */}
+            {activeTab === 'gallery' && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <form
+                  onSubmit={handleAddGallery}
+                  className="lg:col-span-4 border border-white/15 bg-[#111113] p-6 space-y-4 h-fit"
+                >
+                  <div>
+                    <p className="text-[11px] font-bold tracking-[0.22em] text-[#f02b49] uppercase">
+                      OTROS PLANOS
+                    </p>
+                    <h2 className="font-['Barlow_Condensed'] text-3xl font-black tracking-tight mt-1">
+                      AGREGAR IMAGEN
+                    </h2>
+                  </div>
+
+                  <label className="flex flex-col items-center justify-center gap-2 border border-dashed border-white/25 hover:border-[#f02b49] bg-[#080809] p-5 text-center cursor-pointer">
+                    <Upload className="w-5 h-5 text-[#f02b49]" />
+                    <span className="text-xs font-semibold">
+                      {uploadingGalleryImg
+                        ? 'Subiendo foto a GitHub…'
+                        : 'Subir foto a GitHub desde tu dispositivo'}
+                    </span>
+                    <span className="text-[11px] text-[#aaa6aa]">
+                      Se optimiza y se aloja en tu repo (0 KB en Firebase)
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={uploadingGalleryImg}
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        e.target.value = '';
+                        void handleGalleryFilePick(f);
+                      }}
+                    />
+                  </label>
+
+                  <div>
+                    <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                      Ruta en GitHub o URL de imagen
+                    </label>
+                    <input
+                      type="text"
+                      value={newGalleryImageUrl}
+                      onChange={(e) => setNewGalleryImageUrl(e.target.value)}
+                      placeholder="/material/uploads/galeria/foto.jpg o https://..."
+                      className="w-full bg-[#080809] border border-white/15 px-3.5 py-2.5 text-sm text-white focus:border-[#f02b49] focus:outline-none"
+                    />
+                  </div>
+
+                  {(newGalleryPreview || newGalleryImageUrl) && (
+                    <div className="border border-white/15 bg-black overflow-hidden">
+                      <img
+                        src={newGalleryPreview || resolveMediaUrl(newGalleryImageUrl)}
+                        alt="Vista previa"
+                        className="w-full h-44 object-cover"
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                      Epígrafe (opcional)
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={SCHEMA_LIMITS.galleryTitle}
+                      value={newGalleryTitle}
+                      onChange={(e) => setNewGalleryTitle(e.target.value)}
+                      placeholder="Ej: Estudio Catamarca"
+                      className="w-full bg-[#080809] border border-white/15 px-3.5 py-2.5 text-sm text-white focus:border-[#f02b49] focus:outline-none"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={savingGallery || uploadingGalleryImg}
+                    className="w-full py-3.5 bg-[#c10e2e] hover:bg-[#e0163a] disabled:opacity-50 text-white text-xs font-extrabold tracking-[0.14em] uppercase flex items-center justify-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    {savingGallery ? 'Guardando…' : 'Publicar en galería'}
+                  </button>
+                </form>
+
+                <div className="lg:col-span-8 border border-white/15 bg-[#111113] p-6 space-y-4">
+                  <h2 className="font-['Barlow_Condensed'] text-3xl font-black tracking-tight">
+                    IMÁGENES PUBLICADAS ({gallery.length})
+                  </h2>
+
+                  {gallery.length === 0 ? (
+                    <div className="border border-dashed border-white/20 p-8 text-center text-sm text-[#aaa6aa]">
+                      Todavía no hay fotos en la galería.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                      {gallery.map((item) => (
+                        <div
+                          key={item.id}
+                          className="border border-white/12 bg-[#080809] overflow-hidden flex flex-col"
+                        >
+                          <img
+                            src={resolveMediaUrl(item.imageUrl)}
+                            alt={item.title || 'Galería'}
+                            className="w-full h-44 object-cover"
+                          />
+                          <div className="p-3 flex-1 flex flex-col justify-between gap-3">
+                            <p className="text-xs text-[#d2cdd0] truncate">
+                              {item.title || 'Sin epígrafe'}
+                            </p>
+                            <div className="flex items-center justify-between gap-2">
+                              <button
+                                type="button"
+                                onClick={() => void toggleGalleryVisibility(item)}
+                                className="text-[11px] font-bold uppercase text-[#aaa6aa] hover:text-white flex items-center gap-1"
+                              >
+                                {item.isPublic ? (
+                                  <>
+                                    <Eye className="w-3.5 h-3.5 text-emerald-400" /> Visible
+                                  </>
+                                ) : (
+                                  <>
+                                    <EyeOff className="w-3.5 h-3.5" /> Oculta
+                                  </>
+                                )}
+                              </button>
+
+                              {confirmDeleteGalleryId === item.id ? (
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => void handleDeleteGallery(item.id)}
+                                    className="px-2 py-1 bg-[#c10e2e] text-white text-[10px] font-bold uppercase"
+                                  >
+                                    Sí
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setConfirmDeleteGalleryId(null)}
+                                    className="px-2 py-1 border border-white/15 text-[10px]"
+                                  >
+                                    No
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => setConfirmDeleteGalleryId(item.id)}
+                                  className="text-[#aaa6aa] hover:text-[#f02b49]"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ===============================================================
+                TAB 4: COLABORACIONES (ALGUNAS COLABS + ARTISTAS DESTACADOS)
+               =============================================================== */}
+            {activeTab === 'collabs' && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <form
+                  onSubmit={handleSaveCollab}
+                  className="lg:col-span-5 border border-white/15 bg-[#111113] p-6 space-y-4 h-fit"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[11px] font-bold tracking-[0.22em] text-[#f02b49] uppercase">
+                        ALGUNAS COLABS
+                      </p>
+                      <h2 className="font-['Barlow_Condensed'] text-3xl font-black tracking-tight mt-1">
+                        {editingCollabId ? 'EDITAR COLABORACIÓN' : 'NUEVA COLABORACIÓN'}
+                      </h2>
+                    </div>
+                    {editingCollabId && (
+                      <button
+                        type="button"
+                        onClick={resetCollabForm}
+                        className="text-xs text-[#aaa6aa] hover:text-white underline"
+                      >
+                        Cancelar
+                      </button>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                      Nombre / Título de la canción *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      maxLength={SCHEMA_LIMITS.collabTitle}
+                      value={collabTitle}
+                      onChange={(e) => setCollabTitle(e.target.value)}
+                      placeholder="Ej: SMOKK x Artista — Nombre del tema"
+                      className="w-full bg-[#080809] border border-white/15 px-3.5 py-2.5 text-sm text-white focus:border-[#f02b49] focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                        Enlace de YouTube
+                      </label>
+                      <input
+                        type="url"
+                        maxLength={SCHEMA_LIMITS.url}
+                        value={collabYoutube}
+                        onChange={(e) => setCollabYoutube(e.target.value)}
+                        placeholder="https://youtu.be/..."
+                        className="w-full bg-[#080809] border border-white/15 px-3 py-2 text-xs text-white focus:border-[#f02b49] focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                        Spotify (opcional)
+                      </label>
+                      <input
+                        type="url"
+                        maxLength={SCHEMA_LIMITS.url}
+                        value={collabSpotify}
+                        onChange={(e) => setCollabSpotify(e.target.value)}
+                        placeholder="https://open.spotify.com/..."
+                        className="w-full bg-[#080809] border border-white/15 px-3 py-2 text-xs text-white focus:border-[#f02b49] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3]">
+                        Imagen del recuadro
+                      </label>
+                      {getYoutubeId(collabYoutube) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const id = getYoutubeId(collabYoutube);
+                            if (id) {
+                              setCollabImagePreview('');
+                              setCollabImageUrl(`https://i.ytimg.com/vi/${id}/hqdefault.jpg`);
+                            }
+                          }}
+                          className="text-[10px] font-bold uppercase tracking-wider text-[#f02b49] hover:underline"
+                        >
+                          Usar miniatura de YouTube
+                        </button>
+                      )}
+                    </div>
+                    <label className="flex items-center justify-center gap-2 border border-dashed border-white/25 hover:border-[#f02b49] bg-[#080809] p-3.5 cursor-pointer text-xs">
+                      <Upload className="w-4 h-4 text-[#f02b49]" />
+                      <span>
+                        {uploadingCollabImg
+                          ? 'Subiendo a GitHub…'
+                          : collabImageUrl
+                            ? 'Cambiar imagen (sube a GitHub)'
+                            : 'Subir imagen a GitHub'}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        disabled={uploadingCollabImg}
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          e.target.value = '';
+                          void handleCollabImagePick(f);
+                        }}
+                      />
+                    </label>
+                    <input
+                      type="text"
+                      value={collabImageUrl}
+                      onChange={(e) => setCollabImageUrl(e.target.value)}
+                      placeholder="O pegá ruta/URL: /material/uploads/colabs/..."
+                      className="mt-2 w-full bg-[#080809] border border-white/15 px-3 py-1.5 text-xs text-white focus:border-[#f02b49] focus:outline-none"
+                    />
+                    {(collabImagePreview || collabImageUrl) && (
+                      <div className="mt-2 relative">
+                        <img
+                          src={collabImagePreview || resolveMediaUrl(collabImageUrl)}
+                          alt="Portada"
+                          className="w-full h-36 object-cover border border-white/15"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCollabImageUrl('');
+                            setCollabImagePreview('');
+                          }}
+                          className="absolute top-2 right-2 px-2 py-1 bg-black/80 border border-white/20 text-[10px] uppercase text-white hover:border-[#f02b49]"
+                        >
+                          Quitar
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Featured Artist Spotlight Link */}
+                  <div className="border border-white/15 bg-[#080809] p-4 space-y-3">
+                    <label className="flex items-start gap-3 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={collabFeaturedArtist}
+                        onChange={(e) => setCollabFeaturedArtist(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 accent-[#c10e2e] shrink-0"
+                      />
+                      <div className="space-y-0.5">
+                        <span className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-[0.12em] text-white">
+                          <Star
+                            className={`w-3.5 h-3.5 ${
+                              collabFeaturedArtist
+                                ? 'text-[#f02b49] fill-[#f02b49]'
+                                : 'text-[#aaa6aa]'
+                            }`}
+                          />
+                          Destacar artista importante
+                        </span>
+                        <span className="block text-[11px] text-[#aaa6aa] leading-snug">
+                          Muestra la foto y nombre del artista arriba en la sección. Al tocarlo,
+                          abre directo la canción en YouTube o Spotify.
+                        </span>
+                      </div>
+                    </label>
+
+                    {collabFeaturedArtist && (
+                      <div className="pt-3 border-t border-white/10 space-y-3">
+                        <div>
+                          <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                            Nombre del artista destacado *
+                          </label>
+                          <input
+                            type="text"
+                            required={collabFeaturedArtist}
+                            maxLength={SCHEMA_LIMITS.collabArtistName}
+                            value={collabArtistName}
+                            onChange={(e) => setCollabArtistName(e.target.value)}
+                            placeholder="Ej: Damián Córdoba, Lit Killah, Bizarrap…"
+                            className="w-full bg-[#111113] border border-white/15 px-3 py-2 text-sm text-white focus:border-[#f02b49] focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                            Foto del artista
+                          </label>
+                          <label className="flex items-center justify-center gap-2 border border-dashed border-white/25 hover:border-[#f02b49] bg-[#111113] p-3 cursor-pointer text-xs">
+                            <Upload className="w-4 h-4 text-[#f02b49]" />
+                            <span>
+                              {uploadingArtistImg
+                                ? 'Subiendo foto a GitHub…'
+                                : collabArtistPhotoUrl
+                                  ? 'Cambiar foto del artista (GitHub)'
+                                  : 'Subir foto del artista a GitHub'}
+                            </span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              disabled={uploadingArtistImg}
+                              className="hidden"
+                              onChange={(e) => {
+                                const f = e.target.files?.[0];
+                                e.target.value = '';
+                                void handleCollabArtistPhotoPick(f);
+                              }}
+                            />
+                          </label>
+                          <input
+                            type="text"
+                            value={collabArtistPhotoUrl}
+                            onChange={(e) => setCollabArtistPhotoUrl(e.target.value)}
+                            placeholder="O pegá ruta/URL: /material/uploads/artistas/..."
+                            className="mt-2 w-full bg-[#111113] border border-white/15 px-3 py-1.5 text-xs text-white focus:border-[#f02b49] focus:outline-none"
+                          />
+                          {(collabArtistPhotoPreview || collabArtistPhotoUrl) && (
+                            <div className="mt-2 relative flex items-center gap-3 p-2 bg-[#111113] border border-white/15">
+                              <img
+                                src={
+                                  collabArtistPhotoPreview || resolveMediaUrl(collabArtistPhotoUrl)
+                                }
+                                alt={collabArtistName || 'Artista destacado'}
+                                className="w-16 h-20 object-cover object-top border border-white/15 shrink-0"
+                              />
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-semibold text-white truncate">
+                                  {collabArtistName || 'Vista previa del artista'}
+                                </p>
+                                <p className="text-[11px] text-[#aaa6aa]">
+                                  Lista para mostrarse destacada
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setCollabArtistPhotoUrl('');
+                                  setCollabArtistPhotoPreview('');
+                                }}
+                                className="px-2 py-1 bg-black/80 border border-white/20 text-[10px] uppercase text-white hover:border-[#f02b49]"
+                              >
+                                Quitar
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                            Descripción del artista (opcional)
+                          </label>
+                          <textarea
+                            rows={2}
+                            maxLength={SCHEMA_LIMITS.collabArtistDescription}
+                            value={collabArtistDesc}
+                            onChange={(e) => setCollabArtistDesc(e.target.value)}
+                            placeholder="Ej: Composición y colaboración especial…"
+                            className="w-full bg-[#111113] border border-white/15 px-3 py-2 text-xs text-white focus:border-[#f02b49] focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                      Descripción de la canción (opcional)
+                    </label>
+                    <textarea
+                      rows={2}
+                      maxLength={SCHEMA_LIMITS.collabDescription}
+                      value={collabDesc}
+                      onChange={(e) => setCollabDesc(e.target.value)}
+                      placeholder="Breve detalle de la colaboración…"
+                      className="w-full bg-[#080809] border border-white/15 px-3.5 py-2.5 text-sm text-white focus:border-[#f02b49] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                      Ruta / URL de video MP4 en loop (opcional)
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={SCHEMA_LIMITS.mediaUrl}
+                      value={collabVideoUrl}
+                      onChange={(e) => setCollabVideoUrl(e.target.value)}
+                      placeholder="/material/uploads/video/clip.mp4 o https://..."
+                      className="w-full bg-[#080809] border border-white/15 px-3.5 py-2.5 text-sm text-white focus:border-[#f02b49] focus:outline-none"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={savingCollab || uploadingCollabImg || uploadingArtistImg}
+                    className="w-full py-3.5 bg-[#c10e2e] hover:bg-[#e0163a] disabled:opacity-50 text-white text-xs font-extrabold tracking-[0.14em] uppercase flex items-center justify-center gap-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    {savingCollab
+                      ? 'Guardando…'
+                      : editingCollabId
+                        ? 'Actualizar colaboración'
+                        : 'Publicar colaboración'}
+                  </button>
+                </form>
+
+                <div className="lg:col-span-7 border border-white/15 bg-[#111113] p-6 space-y-4">
+                  <h2 className="font-['Barlow_Condensed'] text-3xl font-black tracking-tight">
+                    COLABORACIONES ({collabs.length})
+                  </h2>
+
+                  {collabs.length === 0 ? (
+                    <div className="border border-dashed border-white/20 p-8 text-center text-sm text-[#aaa6aa]">
+                      Todavía no agregaste colaboraciones.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {collabs.map((item) => (
+                        <div
+                          key={item.id}
+                          className={`border bg-[#080809] p-4 flex flex-col gap-3 ${
+                            item.isFeaturedArtist ? 'border-[#f02b49]/50' : 'border-white/12'
+                          }`}
+                        >
+                          {item.isFeaturedArtist && (
+                            <div className="flex items-center gap-2.5 pb-2.5 border-b border-white/10">
+                              {item.artistPhotoUrl ? (
+                                <img
+                                  src={resolveMediaUrl(item.artistPhotoUrl)}
+                                  alt={item.artistName || item.title}
+                                  className="w-10 h-10 object-cover object-top border border-[#f02b49]/50 shrink-0"
+                                />
+                              ) : (
+                                <span className="w-10 h-10 bg-[#c10e2e]/20 border border-[#f02b49]/40 grid place-items-center shrink-0">
+                                  <Star className="w-4 h-4 text-[#f02b49] fill-[#f02b49]" />
+                                </span>
+                              )}
+                              <div className="min-w-0">
+                                <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#f02b49]">
+                                  ★ Artista destacado
+                                </span>
+                                <strong className="block text-xs text-white truncate">
+                                  {item.artistName || 'Sin nombre'}
+                                </strong>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex items-start justify-between gap-2">
+                            <h3 className="font-bold text-sm text-white">{item.title}</h3>
+                            <span className="text-[10px] uppercase tracking-wider text-[#aaa6aa] shrink-0">
+                              {item.isPublic ? 'Visible' : 'Oculta'}
+                            </span>
+                          </div>
+                          {item.imageUrl && (
+                            <img
+                              src={resolveMediaUrl(item.imageUrl)}
+                              alt={item.title}
+                              className="w-full h-36 object-cover border border-white/10"
+                            />
+                          )}
+                          {(item.artistDescription || item.description) && (
+                            <p className="text-xs text-[#aaa6aa] line-clamp-3">
+                              {item.isFeaturedArtist && item.artistDescription
+                                ? item.artistDescription
+                                : item.description}
+                            </p>
+                          )}
+                          <div className="mt-auto pt-2 flex items-center justify-between gap-2 border-t border-white/10">
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => startEditCollab(item)}
+                                className="text-[11px] font-bold uppercase text-[#f02b49] hover:underline"
+                              >
+                                Editar
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void toggleCollabVisibility(item)}
+                                className="text-[11px] uppercase text-[#aaa6aa] hover:text-white"
+                              >
+                                {item.isPublic ? 'Ocultar' : 'Mostrar'}
+                              </button>
+                            </div>
+                            {confirmDeleteCollabId === item.id ? (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => void handleDeleteCollab(item.id)}
+                                  className="px-2 py-1 bg-[#c10e2e] text-white text-[10px] font-bold uppercase"
+                                >
+                                  Sí
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setConfirmDeleteCollabId(null)}
+                                  className="px-2 py-1 border border-white/15 text-[10px]"
+                                >
+                                  No
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setConfirmDeleteCollabId(item.id)}
+                                className="text-[#aaa6aa] hover:text-[#f02b49]"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ===============================================================
+                TAB 5: GENERAL, REDES, PORTADA HERO, VIDEO FONDO & BIO
+               =============================================================== */}
+            {activeTab === 'general' && (
+              <form onSubmit={handleSaveConfig} className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Branding & Links */}
+                  <section className="border border-white/15 bg-[#111113] p-6 space-y-4">
+                    <h2 className="font-['Barlow_Condensed'] text-3xl font-black tracking-tight">
+                      IDENTIDAD Y REDES
+                    </h2>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1">
+                          Nombre del artista
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          maxLength={SCHEMA_LIMITS.artistName}
+                          value={config.artistName}
+                          onChange={(e) =>
+                            setConfig((prev) => ({ ...prev, artistName: e.target.value }))
+                          }
+                          className="w-full bg-[#080809] border border-white/15 px-3 py-2 text-sm text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1">
+                          Ubicación / Pie de página
+                        </label>
+                        <input
+                          type="text"
+                          maxLength={SCHEMA_LIMITS.contactLine}
+                          value={config.contactLine}
+                          onChange={(e) =>
+                            setConfig((prev) => ({ ...prev, contactLine: e.target.value }))
+                          }
+                          className="w-full bg-[#080809] border border-white/15 px-3 py-2 text-sm text-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1">
+                        Subtítulo Hero (Eyebrow)
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={SCHEMA_LIMITS.heroEyebrow}
+                        value={config.heroEyebrow}
+                        onChange={(e) =>
+                          setConfig((prev) => ({ ...prev, heroEyebrow: e.target.value }))
+                        }
+                        className="w-full bg-[#080809] border border-white/15 px-3 py-2 text-sm text-white"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1">
+                          Intro (Arriba)
+                        </label>
+                        <input
+                          type="text"
+                          maxLength={SCHEMA_LIMITS.introKicker}
+                          value={config.introKicker}
+                          onChange={(e) =>
+                            setConfig((prev) => ({ ...prev, introKicker: e.target.value }))
+                          }
+                          className="w-full bg-[#080809] border border-white/15 px-3 py-2 text-sm text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1">
+                          Intro (Abajo)
+                        </label>
+                        <input
+                          type="text"
+                          maxLength={SCHEMA_LIMITS.introCaption}
+                          value={config.introCaption}
+                          onChange={(e) =>
+                            setConfig((prev) => ({ ...prev, introCaption: e.target.value }))
+                          }
+                          className="w-full bg-[#080809] border border-white/15 px-3 py-2 text-sm text-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1">
+                        YouTube
+                      </label>
+                      <input
+                        type="url"
+                        maxLength={SCHEMA_LIMITS.url}
+                        value={config.youtubeUrl}
+                        onChange={(e) =>
+                          setConfig((prev) => ({ ...prev, youtubeUrl: e.target.value }))
+                        }
+                        className="w-full bg-[#080809] border border-white/15 px-3 py-2 text-sm text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1">
+                        Spotify
+                      </label>
+                      <input
+                        type="url"
+                        maxLength={SCHEMA_LIMITS.url}
+                        value={config.spotifyUrl}
+                        onChange={(e) =>
+                          setConfig((prev) => ({ ...prev, spotifyUrl: e.target.value }))
+                        }
+                        className="w-full bg-[#080809] border border-white/15 px-3 py-2 text-sm text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1">
+                        Instagram
+                      </label>
+                      <input
+                        type="url"
+                        maxLength={SCHEMA_LIMITS.url}
+                        value={config.instagramUrl}
+                        onChange={(e) =>
+                          setConfig((prev) => ({ ...prev, instagramUrl: e.target.value }))
+                        }
+                        className="w-full bg-[#080809] border border-white/15 px-3 py-2 text-sm text-white"
+                      />
+                    </div>
+                  </section>
+
+                  {/* Hero Visuals & Bio */}
+                  <section className="border border-white/15 bg-[#111113] p-6 space-y-4">
+                    <h2 className="font-['Barlow_Condensed'] text-3xl font-black tracking-tight">
+                      PORTADA Y BIOGRAFÍA
+                    </h2>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                      <div>
+                        <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1.5">
+                          Imagen principal (Hero — en GitHub)
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          <label className="px-3 py-2 bg-[#080809] border border-white/20 hover:border-[#f02b49] text-xs cursor-pointer">
+                            {uploadingPortrait ? 'Subiendo…' : 'Subir foto a GitHub'}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              disabled={uploadingPortrait}
+                              className="hidden"
+                              onChange={(e) => {
+                                const f = e.target.files?.[0];
+                                e.target.value = '';
+                                void handleUploadPortraitToGitHub(f);
+                              }}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPortraitPreview('');
+                              setConfig((prev) => ({
+                                ...prev,
+                                portraitImage: '/material/imagenes/personaje.png',
+                              }));
+                            }}
+                            className="px-3 py-2 border border-white/15 text-xs text-[#aaa6aa] hover:text-white"
+                          >
+                            Restaurar original
+                          </button>
+                        </div>
+                      </div>
+                      <div className="h-28 bg-[#080809] border border-white/10 flex items-center justify-center overflow-hidden">
+                        <img
+                          src={
+                            portraitPreview ||
+                            resolveMediaUrl(
+                              config.portraitImage || '/material/imagenes/personaje.png'
+                            )
+                          }
+                          alt="Retrato"
+                          className="h-full object-contain"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="border border-white/12 bg-[#080809] p-4 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3]">
+                            Video corto de fondo (alojado en GitHub)
+                          </label>
+                          <p className="text-[11px] text-[#aaa6aa] mt-0.5">
+                            {config.backgroundVideoUrl
+                              ? `Activo: ${config.backgroundVideoUrl}`
+                              : 'Subí un MP4/WebM en loop a tu repo de GitHub (hasta 24 MB) o pegá su ruta.'}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <label className="px-3 py-2 bg-[#c10e2e]/20 hover:bg-[#c10e2e] border border-[#f02b49]/50 text-[11px] font-bold uppercase tracking-wider cursor-pointer transition-colors">
+                            {uploadingBgVideo
+                              ? 'Subiendo a GitHub…'
+                              : config.backgroundVideoUrl
+                                ? 'Reemplazar MP4'
+                                : 'Subir MP4 a GitHub'}
+                            <input
+                              type="file"
+                              accept="video/mp4,video/webm,.mp4,.webm"
+                              disabled={uploadingBgVideo}
+                              className="hidden"
+                              onChange={(e) => {
+                                const picked = e.target.files?.[0];
+                                e.target.value = '';
+                                void handleUploadBgVideoToGitHub(picked);
+                              }}
+                            />
+                          </label>
+                          {config.backgroundVideoUrl && (
+                            <button
+                              type="button"
+                              disabled={uploadingBgVideo || savingConfig}
+                              onClick={() => void handleClearBgVideo()}
+                              className="px-3 py-2 border border-white/15 hover:border-[#f02b49] text-[11px] font-bold uppercase text-[#aaa6aa] hover:text-[#f02b49]"
+                            >
+                              Quitar video
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold tracking-[0.14em] uppercase text-[#aaa6aa] mb-1">
+                          Ruta en GitHub o enlace MP4
+                        </label>
+                        <input
+                          type="text"
+                          maxLength={SCHEMA_LIMITS.backgroundVideoUrl}
+                          value={config.backgroundVideoUrl}
+                          onChange={(e) =>
+                            setConfig((prev) => ({ ...prev, backgroundVideoUrl: e.target.value }))
+                          }
+                          placeholder="/material/uploads/video/fondo.mp4 o https://..."
+                          className="w-full bg-[#111113] border border-white/15 px-3 py-2 text-xs text-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1">
+                        Bio — Párrafo destacado
+                      </label>
+                      <textarea
+                        rows={2}
+                        maxLength={SCHEMA_LIMITS.bioLead}
+                        value={config.bioLead}
+                        onChange={(e) =>
+                          setConfig((prev) => ({ ...prev, bioLead: e.target.value }))
+                        }
+                        className="w-full bg-[#080809] border border-white/15 px-3 py-2 text-sm text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1">
+                        Bio — Historia
+                      </label>
+                      <textarea
+                        rows={3}
+                        maxLength={SCHEMA_LIMITS.bioBody1}
+                        value={config.bioBody1}
+                        onChange={(e) =>
+                          setConfig((prev) => ({ ...prev, bioBody1: e.target.value }))
+                        }
+                        className="w-full bg-[#080809] border border-white/15 px-3 py-2 text-sm text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1">
+                        Bio — Composición
+                      </label>
+                      <textarea
+                        rows={2}
+                        maxLength={SCHEMA_LIMITS.bioBody2}
+                        value={config.bioBody2}
+                        onChange={(e) =>
+                          setConfig((prev) => ({ ...prev, bioBody2: e.target.value }))
+                        }
+                        className="w-full bg-[#080809] border border-white/15 px-3 py-2 text-sm text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold tracking-[0.14em] uppercase text-[#c5c0c3] mb-1">
+                        Bio — Créditos y colaboraciones
+                      </label>
+                      <textarea
+                        rows={2}
+                        maxLength={SCHEMA_LIMITS.bioCredits}
+                        value={config.bioCredits}
+                        onChange={(e) =>
+                          setConfig((prev) => ({ ...prev, bioCredits: e.target.value }))
+                        }
+                        className="w-full bg-[#080809] border border-white/15 px-3 py-2 text-sm text-white"
+                      />
+                    </div>
+                  </section>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={savingConfig}
+                    className="px-8 py-3.5 bg-[#c10e2e] hover:bg-[#e0163a] disabled:opacity-50 text-white text-xs font-extrabold tracking-[0.14em] uppercase flex items-center gap-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    {savingConfig ? 'Guardando…' : 'Guardar cambios'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
