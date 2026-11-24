@@ -47,13 +47,13 @@ export const PublicSite: React.FC<PublicSiteProps> = ({ onOpenAdmin }) => {
   const currentIndexRef = useRef<number>(-1);
   const musicEnabledRef = useRef<boolean>(false);
 
-  // Scroll-scrubbed reveal for the hero artist portrait on the very first scroll gesture
+  // Scroll-scrubbed depth recede for the hero artist portrait: starts sharp & forward, recedes & softens on scroll down
   const { scrollY } = useScroll();
   const smoothScroll = useSpring(scrollY, { stiffness: 130, damping: 24, mass: 0.35 });
-  const portraitOpacity = useTransform(smoothScroll, [0, 140], [0.22, 1]);
-  const portraitScale = useTransform(smoothScroll, [0, 150], [0.88, 1.06]);
-  const portraitX = useTransform(smoothScroll, [0, 140], [34, 0]);
-  const portraitY = useTransform(smoothScroll, [0, 140], [22, 0]);
+  const portraitOpacity = useTransform(smoothScroll, [0, 260], [1, 0.28]);
+  const portraitScale = useTransform(smoothScroll, [0, 280], [1.06, 0.86]);
+  const portraitX = useTransform(smoothScroll, [0, 260], [0, 28]);
+  const portraitY = useTransform(smoothScroll, [0, 260], [0, 28]);
 
   useEffect(() => {
     tracksRef.current = tracks;
