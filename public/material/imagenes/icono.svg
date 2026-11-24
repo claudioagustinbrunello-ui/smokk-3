@@ -1,1 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="72" fill="#080809"/><path d="M70 115h372v62H300v222h-72V177H70z" fill="#f5f3f3"/><path d="M344 338h98v61h-98z" fill="#c10e2e"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="smokkGlow" cx="50%" cy="46%" r="54%">
+      <stop offset="0%" stop-color="#c10e2e" stop-opacity="0.48" />
+      <stop offset="62%" stop-color="#7a061c" stop-opacity="0.16" />
+      <stop offset="100%" stop-color="#080809" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="#080809" />
+  <rect width="512" height="512" fill="url(#smokkGlow)" />
+  <path
+    d="M 332 174 C 332 134, 300 116, 256 116 C 210 116, 180 138, 180 178 C 180 220, 214 238, 258 254 C 304 270, 336 290, 336 336 C 336 378, 302 398, 256 398 C 208 398, 176 376, 176 334"
+    fill="none"
+    stroke="#f5f3f3"
+    stroke-width="60"
+    stroke-linecap="butt"
+  />
+</svg>
