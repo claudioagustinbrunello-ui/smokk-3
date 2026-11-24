@@ -315,7 +315,7 @@ a:focus-visible {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .hero-art-background {
@@ -327,6 +327,7 @@ a:focus-visible {
   object-position: center;
   opacity: 0.5;
   mix-blend-mode: screen;
+  -webkit-mask-image: linear-gradient(0deg, transparent 0%, #000 25%, #000 75%, transparent 100%);
   mask-image: linear-gradient(0deg, transparent 0%, #000 25%, #000 75%, transparent 100%);
 }
 
@@ -336,15 +337,9 @@ a:focus-visible {
   height: 100%;
   object-fit: contain;
   object-position: center bottom;
-  filter: drop-shadow(0 0 60px #b3002540);
-}
-
-.hero-art:after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(0deg, rgba(8, 8, 9, 0.55) 0%, transparent 32%),
-    linear-gradient(90deg, rgba(8, 8, 9, 0.48) 0%, transparent 40%);
+  filter: drop-shadow(0 0 42px rgba(179, 0, 37, 0.28));
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 84%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 84%, transparent 100%);
 }
 
 .hero-bottom {
@@ -1403,10 +1398,6 @@ a:focus-visible {
     height: 100%;
     object-fit: contain;
     object-position: center bottom;
-  }
-  .hero-art:after {
-    background: linear-gradient(0deg, rgba(8, 8, 9, 0.52) 0%, transparent 24%),
-      linear-gradient(90deg, rgba(8, 8, 9, 0.46) 0%, rgba(8, 8, 9, 0.12) 20%, transparent 65%);
   }
   .hero-bottom {
     left: 16px;
