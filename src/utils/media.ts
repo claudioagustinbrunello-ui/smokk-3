@@ -10,6 +10,30 @@ export function sanitizeDocId(prefix: string): string {
   return `${cleanPrefix}_${Date.now()}_${rand}`.slice(0, 128);
 }
 
+export function isBase64DataUrl(value: string | undefined | null): boolean {
+  return typeof value === 'string' && value.trim().startsWith('data:');
+}
+
+/**
+ * Resolves a stored media reference (either external https:// URL or relative repo path
+ * like `/material/uploads/...`) so it works on GitHub Pages subpaths and custom domains.
+ */
+export function resolveMediaUrl(value: string | undefined | null): string {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (
+    raw.startsWith('https://') ||
+    raw.startsWith('http://') ||
+    raw.startsWith('blob:') ||
+    raw.startsWith('data:')
+  ) {
+    return raw;
+  }
+  const base = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
+  const cleanPath = raw.replace(/^\/+/, '');
+  return `${base}/${cleanPath}`;
+}
+
 export function safeExternalLink(value: string | undefined | null): string {
   const raw = String(value || '').trim();
   if (!raw) return '';
@@ -47,89 +71,11 @@ export function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
-function uint8ArrayToBase64(bytes: Uint8Array): string {
-  let binary = '';
-  const step = 0x8000;
-  for (let i = 0; i < bytes.length; i += step) {
-    const slice = bytes.subarray(i, Math.min(i + step, bytes.length));
-    binary += String.fromCharCode(...slice);
-  }
-  return btoa(binary);
-}
-
-function base64ToUint8Array(base64: string): Uint8Array {
-  const binary = atob(base64);
-  const len = binary.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes;
-}
-
-export async function splitBinaryFileToBase64Chunks(
-  file: File,
-  kindLabel = 'archivo'
-): Promise<string[]> {
-  if (file.size === 0) {
-    throw new Error(`El ${kindLabel} está vacío.`);
-  }
-  if (file.size > SCHEMA_LIMITS.maxMp3Bytes) {
-    throw new Error(
-      `El ${kindLabel} supera el límite permitido de ${formatBytes(SCHEMA_LIMITS.maxMp3Bytes)}. Comprimilo e intentá de nuevo.`
-    );
-  }
-
-  const buffer = await file.arrayBuffer();
-  const fullBytes = new Uint8Array(buffer);
-  const chunks: string[] = [];
-  const step = SCHEMA_LIMITS.chunkRawBytes;
-
-  for (let offset = 0; offset < fullBytes.length; offset += step) {
-    const slice = fullBytes.subarray(offset, Math.min(offset + step, fullBytes.length));
-    chunks.push(uint8ArrayToBase64(slice));
-  }
-
-  if (chunks.length > SCHEMA_LIMITS.maxChunks) {
-    throw new Error(`El ${kindLabel} genera demasiados fragmentos (máx. 15 MB).`);
-  }
-
-  return chunks;
-}
-
-export async function splitAudioFileToBase64Chunks(file: File): Promise<string[]> {
-  return splitBinaryFileToBase64Chunks(file, 'archivo de audio');
-}
-
-export function reassembleIndexedChunksToBlobUrl(
-  chunks: Array<{ index: number; data: string }>,
-  mimeType: string
-): string {
-  const sorted = [...chunks].sort((a, b) => a.index - b.index);
-  const byteParts = sorted.map((chunk) => base64ToUint8Array(chunk.data));
-  const totalLength = byteParts.reduce((acc, part) => acc + part.length, 0);
-  const merged = new Uint8Array(totalLength);
-  let offset = 0;
-  for (const part of byteParts) {
-    merged.set(part, offset);
-    offset += part.length;
-  }
-  const blob = new Blob([merged], { type: mimeType || 'application/octet-stream' });
-  return URL.createObjectURL(blob);
-}
-
-export function reassembleChunksToBlobUrl(chunks: TrackChunk[], mimeType: string): string {
-  return reassembleIndexedChunksToBlobUrl(chunks, mimeType || 'audio/mpeg');
-}
-
 /**
- * Compresses an uploaded image via canvas so it fits comfortably inside Firestore (< 500 KB).
+ * Optimizes an image file to WebP/JPEG before uploading to GitHub so pages load fast on mobile.
  */
-export async function compressImageToDataUrl(
-  file: File,
-  maxDimension = 1400,
-  maxChars = 520000
-): Promise<string> {
+export async function optimizeImageForGitHub(file: File, maxDimension = 1400): Promise<File> {
+  // Keep transparent PNGs as PNG or WebP (WebP supports alpha cleanly and is much lighter)
   const imageUrl = URL.createObjectURL(file);
   try {
     const img = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -139,7 +85,6 @@ export async function compressImageToDataUrl(
       el.src = imageUrl;
     });
 
-    const isPng = file.type === 'image/png';
     let width = img.naturalWidth;
     let height = img.naturalHeight;
     if (width > maxDimension || height > maxDimension) {
@@ -152,34 +97,55 @@ export async function compressImageToDataUrl(
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      throw new Error('No se pudo inicializar el procesador de imagen.');
-    }
+    if (!ctx) return file;
     ctx.drawImage(img, 0, 0, width, height);
 
-    const outputType = isPng ? 'image/webp' : 'image/jpeg';
-    let quality = 0.86;
-    let dataUrl = canvas.toDataURL(outputType, quality);
+    const outputMime = file.type === 'image/png' ? 'image/webp' : 'image/jpeg';
+    const ext = outputMime === 'image/webp' ? 'webp' : 'jpg';
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, outputMime, 0.85)
+    );
+    if (!blob) return file;
 
-    while (dataUrl.length > maxChars && quality > 0.35) {
-      quality -= 0.1;
-      dataUrl = canvas.toDataURL(outputType, quality);
-    }
-
-    if (dataUrl.length > maxChars) {
-      const shrink = Math.sqrt(maxChars / dataUrl.length) * 0.9;
-      canvas.width = Math.max(320, Math.round(width * shrink));
-      canvas.height = Math.max(320, Math.round(height * shrink));
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      dataUrl = canvas.toDataURL(outputType, 0.78);
-    }
-
-    if (dataUrl.length > SCHEMA_LIMITS.imageDataUrl) {
-      throw new Error('La imagen sigue siendo demasiado pesada. Probá con una más liviana.');
-    }
-
-    return dataUrl;
+    const baseName = file.name.replace(/\.[^.]+$/, '') || 'imagen';
+    return new File([blob], `${baseName}.${ext}`, { type: outputMime });
   } finally {
     URL.revokeObjectURL(imageUrl);
   }
+}
+
+function base64ToUint8Array(base64: string): Uint8Array {
+  const binary = atob(base64);
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+export function reassembleChunksToBlobUrl(chunks: TrackChunk[], mimeType: string): string {
+  const sorted = [...chunks].sort((a, b) => a.index - b.index);
+  const byteParts = sorted.map((chunk) => base64ToUint8Array(chunk.data));
+  const totalLength = byteParts.reduce((acc, part) => acc + part.length, 0);
+  const merged = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const part of byteParts) {
+    merged.set(part, offset);
+    offset += part.length;
+  }
+  const blob = new Blob([merged], { type: mimeType || 'audio/mpeg' });
+  return URL.createObjectURL(blob);
+}
+
+export function assertNoBase64InFirestore(value: string, label: string): void {
+  if (isBase64DataUrl(value)) {
+    throw new Error(
+      `Por seguridad de cuota, ${label} no se guarda en Firebase como base64. Subilo a GitHub o usá un enlace.`
+    );
+  }
+}
+
+export function assertWithinUrlLimit(value: string, limit = SCHEMA_LIMITS.mediaUrl): string {
+  return clampString(value, limit);
 }
