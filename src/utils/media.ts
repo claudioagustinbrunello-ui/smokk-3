@@ -100,15 +100,18 @@ export async function optimizeImageForGitHub(file: File, maxDimension = 1400): P
     if (!ctx) return file;
     ctx.drawImage(img, 0, 0, width, height);
 
-    const outputMime = file.type === 'image/png' ? 'image/webp' : 'image/jpeg';
-    const ext = outputMime === 'image/webp' ? 'webp' : 'jpg';
+    const hasAlpha = file.type === 'image/png' || file.type === 'image/webp';
+    const outputMime = hasAlpha ? 'image/webp' : 'image/jpeg';
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, outputMime, 0.85)
     );
     if (!blob) return file;
 
+    const actualMime = blob.type || outputMime;
+    const ext =
+      actualMime === 'image/png' ? 'png' : actualMime === 'image/webp' ? 'webp' : 'jpg';
     const baseName = file.name.replace(/\.[^.]+$/, '') || 'imagen';
-    return new File([blob], `${baseName}.${ext}`, { type: outputMime });
+    return new File([blob], `${baseName}.${ext}`, { type: actualMime });
   } finally {
     URL.revokeObjectURL(imageUrl);
   }
