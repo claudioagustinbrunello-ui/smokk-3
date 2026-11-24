@@ -57,32 +57,39 @@ a:focus-visible {
   overflow: clip;
 }
 
+.site > main,
+.site > footer {
+  position: relative;
+  z-index: 1;
+}
+
 .video-backdrop {
   position: fixed;
   inset: 0;
-  z-index: -2;
+  z-index: 0;
   background: #09090a;
   overflow: hidden;
+  pointer-events: none;
 }
 
 .video-backdrop video {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.42;
-  filter: saturate(0.78);
+  opacity: 0.58;
+  filter: saturate(0.92) contrast(1.04);
 }
 
 .video-shade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.47), rgba(0, 0, 0, 0.21) 45%, #080809 100%);
+  background: linear-gradient(180deg, rgba(6, 6, 8, 0.34), rgba(6, 6, 8, 0.2) 50%, rgba(8, 8, 9, 0.44) 100%);
 }
 
 .red-haze {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 75% 30%, rgba(172, 0, 35, 0.22), transparent 48%);
+  background: radial-gradient(ellipse at 75% 30%, rgba(172, 0, 35, 0.18), transparent 48%);
   mix-blend-mode: screen;
   pointer-events: none;
 }
@@ -211,8 +218,8 @@ a:focus-visible {
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--line);
-  background: rgba(5, 5, 6, 0.56);
-  backdrop-filter: blur(16px);
+  background: rgba(5, 5, 6, 0.52);
+  backdrop-filter: blur(13px);
   position: sticky;
   top: 0;
   z-index: 20;
@@ -261,7 +268,7 @@ a:focus-visible {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, #080809 0%, rgba(8, 8, 9, 0.9) 38%, rgba(8, 8, 9, 0.12) 100%);
+  background: linear-gradient(90deg, rgba(8, 8, 9, 0.78) 0%, rgba(8, 8, 9, 0.52) 40%, rgba(8, 8, 9, 0.1) 100%);
   z-index: -1;
 }
 
@@ -336,8 +343,8 @@ a:focus-visible {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(0deg, #080809 0%, transparent 30%),
-    linear-gradient(90deg, #080809 0%, transparent 40%);
+  background: linear-gradient(0deg, rgba(8, 8, 9, 0.55) 0%, transparent 32%),
+    linear-gradient(90deg, rgba(8, 8, 9, 0.48) 0%, transparent 40%);
 }
 
 .hero-bottom {
@@ -361,8 +368,8 @@ a:focus-visible {
 
 .cinema {
   padding: clamp(50px, 12vw, 170px);
-  background: linear-gradient(115deg, rgba(7, 7, 8, 0.98), rgba(12, 7, 9, 0.78)),
-    radial-gradient(ellipse at 75% 55%, #7d071d 0%, transparent 40%);
+  background: linear-gradient(115deg, rgba(7, 7, 8, 0.54), rgba(14, 7, 10, 0.36)),
+    radial-gradient(ellipse at 75% 55%, rgba(125, 7, 29, 0.42) 0%, transparent 48%);
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
@@ -403,7 +410,13 @@ a:focus-visible {
 
 .section {
   padding: clamp(70px, 10vw, 140px) clamp(22px, 9vw, 130px);
-  background: var(--black);
+  background: linear-gradient(
+    180deg,
+    rgba(8, 8, 9, 0.22) 0%,
+    rgba(8, 8, 9, 0.5) 18%,
+    rgba(8, 8, 9, 0.5) 82%,
+    rgba(8, 8, 9, 0.22) 100%
+  );
 }
 
 .section-heading,
@@ -428,6 +441,8 @@ a:focus-visible {
 .empty-state {
   color: var(--muted);
   border: 1px dashed #4a353a;
+  background: rgba(12, 12, 14, 0.72);
+  backdrop-filter: blur(5px);
   padding: 24px;
   max-width: 700px;
 }
@@ -436,7 +451,13 @@ a:focus-visible {
   display: grid;
   grid-template-columns: 0.35fr 1fr;
   gap: 30px;
-  background: #0e0e10;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 10, 13, 0.3) 0%,
+    rgba(12, 12, 15, 0.62) 18%,
+    rgba(12, 12, 15, 0.62) 82%,
+    rgba(10, 10, 13, 0.3) 100%
+  );
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
@@ -488,14 +509,20 @@ a:focus-visible {
 }
 
 .release-section {
-  background: #080809;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 8, 10, 0.22) 0%,
+    rgba(8, 8, 10, 0.5) 18%,
+    rgba(8, 8, 10, 0.5) 82%,
+    rgba(8, 8, 10, 0.22) 100%
+  );
 }
 
 .youtube-frame {
   position: relative;
   width: 100%;
   aspect-ratio: 16/9;
-  background: #151517;
+  background: rgba(18, 18, 20, 0.85);
   border: 1px solid var(--line);
   overflow: hidden;
 }
@@ -520,7 +547,7 @@ a:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 36px;
-  background: linear-gradient(100deg, #101012, #18070b);
+  background: linear-gradient(100deg, rgba(14, 14, 17, 0.56), rgba(28, 7, 13, 0.48));
   border-top: 1px solid var(--line);
 }
 
@@ -534,7 +561,8 @@ a:focus-visible {
   grid-template-columns: 1fr 1fr;
   gap: 16px;
   align-items: center;
-  background: #050506;
+  background: rgba(5, 5, 7, 0.74);
+  backdrop-filter: blur(8px);
   border-top: 1px solid var(--line);
   color: #b9b3b6;
   font-size: 0.8rem;
@@ -582,9 +610,9 @@ a:focus-visible {
   align-items: center;
   gap: 12px;
   padding: 10px clamp(16px, 4vw, 36px) calc(10px + var(--safe-bottom));
-  background: rgba(7, 7, 8, 0.91);
+  background: rgba(7, 7, 8, 0.84);
   border-top: 1px solid rgba(255, 255, 255, 0.13);
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(15px);
 }
 
 .bottom-mark {
@@ -647,9 +675,9 @@ a:focus-visible {
   align-items: center;
   gap: 14px;
   padding: 9px clamp(16px, 4vw, 36px);
-  background: rgba(12, 12, 14, 0.94);
+  background: rgba(12, 12, 14, 0.86);
   border-top: 1px solid rgba(240, 43, 73, 0.45);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(12px);
   overflow: hidden;
 }
 
@@ -725,7 +753,8 @@ a:focus-visible {
   max-width: 920px;
   padding: 24px;
   border: 1px solid var(--line);
-  background: linear-gradient(110deg, rgba(193, 14, 46, 0.13), rgba(16, 16, 18, 0.95));
+  background: linear-gradient(110deg, rgba(193, 14, 46, 0.16), rgba(16, 16, 18, 0.78));
+  backdrop-filter: blur(6px);
 }
 
 .now-playing-card .eyebrow {
@@ -754,7 +783,13 @@ a:focus-visible {
 }
 
 .gallery-section {
-  background: #0b0b0d;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 8, 10, 0.22) 0%,
+    rgba(10, 10, 13, 0.48) 18%,
+    rgba(10, 10, 13, 0.48) 82%,
+    rgba(8, 8, 10, 0.22) 100%
+  );
   border-top: 1px solid var(--line);
 }
 
@@ -774,7 +809,8 @@ a:focus-visible {
   margin: 0;
   scroll-snap-align: start;
   overflow: hidden;
-  background: #111;
+  background: rgba(15, 15, 18, 0.78);
+  backdrop-filter: blur(5px);
   border: 1px solid var(--line);
 }
 
@@ -798,7 +834,13 @@ a:focus-visible {
 }
 
 .collabs-section {
-  background: #080809;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 8, 10, 0.2) 0%,
+    rgba(8, 8, 10, 0.46) 18%,
+    rgba(8, 8, 10, 0.46) 82%,
+    rgba(8, 8, 10, 0.2) 100%
+  );
   border-top: 1px solid var(--line);
 }
 
@@ -825,7 +867,8 @@ a:focus-visible {
 .featured-artist-card {
   display: flex;
   flex-direction: column;
-  background: #111113;
+  background: rgba(15, 15, 18, 0.8);
+  backdrop-filter: blur(6px);
   border: 1px solid rgba(240, 43, 73, 0.28);
   overflow: hidden;
   transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
@@ -984,7 +1027,8 @@ a:focus-visible {
 .collab-card {
   min-width: 0;
   padding: 13px;
-  background: #111113;
+  background: rgba(15, 15, 18, 0.8);
+  backdrop-filter: blur(6px);
   border: 1px solid var(--line);
   display: grid;
   grid-template-columns: 108px minmax(0, 1fr);
@@ -1304,7 +1348,7 @@ a:focus-visible {
     gap: 2px;
   }
   .hero:before {
-    background: linear-gradient(90deg, #080809 0%, rgba(8, 8, 9, 0.88) 44%, rgba(8, 8, 9, 0.22) 100%);
+    background: linear-gradient(90deg, rgba(8, 8, 9, 0.76) 0%, rgba(8, 8, 9, 0.48) 44%, rgba(8, 8, 9, 0.14) 100%);
   }
   .hero-copy {
     width: 100%;
@@ -1361,8 +1405,8 @@ a:focus-visible {
     object-position: center bottom;
   }
   .hero-art:after {
-    background: linear-gradient(0deg, #080809 0%, transparent 24%),
-      linear-gradient(90deg, #080809 0%, rgba(8, 8, 9, 0.18) 20%, transparent 65%);
+    background: linear-gradient(0deg, rgba(8, 8, 9, 0.52) 0%, transparent 24%),
+      linear-gradient(90deg, rgba(8, 8, 9, 0.46) 0%, rgba(8, 8, 9, 0.12) 20%, transparent 65%);
   }
   .hero-bottom {
     left: 16px;
